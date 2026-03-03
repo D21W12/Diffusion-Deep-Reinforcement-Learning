@@ -1,5 +1,5 @@
 from . import Agent
-from .replay_memory import ReplayMemory
+from .experience_replay import ReplayMemory
 
 
 class DQNAgent(Agent):

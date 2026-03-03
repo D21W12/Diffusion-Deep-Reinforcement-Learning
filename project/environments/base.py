@@ -1,7 +1,7 @@
 import gymnasium as gym
 
 
-class EnvWrapper(gym.Wrapper):
+class BaseEnvWrapper(gym.Wrapper):
 
     def __init__(
             self,

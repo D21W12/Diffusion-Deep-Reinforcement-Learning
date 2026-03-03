@@ -15,7 +15,7 @@ class Experience[S]:
     def __init__(
             self,
             s: S,
-            a: A,
+            a: int,
             r: float,
             s_prime: S,
     ):
