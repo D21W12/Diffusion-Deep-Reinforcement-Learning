@@ -1,9 +1,11 @@
-import gymnasium as gym
 import ale_py
+import gymnasium as gym
+import matplotlib.pyplot as plt
+
 from time import sleep
 
-from project.environments import BaseEnvWrapper
-import matplotlib.pyplot as plt
+from project.environments import BaseWrapper
+
 
 gym.register_envs(ale_py)
 
@@ -11,7 +13,7 @@ FPS = 60
 VISUAL = True
 
 env = gym.make('ALE/Breakout-v5', render_mode='human' if VISUAL else None)
-env = BaseEnvWrapper(env, frame_stack_size=1)
+env = BaseWrapper(env, frame_stack_size=1)
 obs, info = env.reset()
 
 for i in range(4):

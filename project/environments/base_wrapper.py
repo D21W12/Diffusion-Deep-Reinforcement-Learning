@@ -1,7 +1,7 @@
 import gymnasium as gym
 
 
-class BaseEnvWrapper(gym.Wrapper):
+class BaseWrapper(gym.Wrapper):
     """
     Base
     """

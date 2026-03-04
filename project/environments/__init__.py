@@ -1,1 +1,1 @@
-from .base_wrapper import BaseEnvWrapper
+from .base_wrapper import BaseWrapper
