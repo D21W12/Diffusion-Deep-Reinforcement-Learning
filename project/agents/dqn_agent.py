@@ -7,6 +7,8 @@ class DQNAgent(Agent):
     def __init__(
             self
     ) -> None:
+        """Constructor of the DQNAgent class."""
+
         super().__init__()
 
         self._dqn = ...

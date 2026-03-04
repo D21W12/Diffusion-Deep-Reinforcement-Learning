@@ -1,8 +1,8 @@
 class Agent:
 
     def __init__(self) -> None:
+        """Constructor of the base agent class."""
         self._train = False
-        pass
 
     def train(self) -> bool:
         """
