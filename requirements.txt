@@ -1,4 +1,4 @@
 torch
 torchvision
-gymnasium[atari]
+gymnasium[all]
 matplotlib

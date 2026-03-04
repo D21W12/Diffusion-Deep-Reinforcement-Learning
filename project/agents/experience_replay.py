@@ -1,28 +1,33 @@
-class ReplayMemory[S]:
+class ReplayMemory[ObsType]:
 
-    def __init__(self):
-        self._experiences: list[Experience[S]] = []
+    def __init__(self, N: int):
+        self._experiences: list[Experience[ObsType]] = []
+        self._N = N
 
-    def sample(self) -> 'Experience[S]':
+    def sample(self, n: int) -> 'Experience[ObsType]':
         raise NotImplementedError
 
-    def add(self, e: 'Experience[S]') -> None:
+    def add(self, e: 'Experience[ObsType]') -> None:
         self._experiences.append(e)
 
+        # If the replay memory is full, remove the first experience
+        if len(self._experiences) > self._N:
+            self._experiences.pop(0)
 
-class Experience[S]:
+
+class Experience[ObsType]:
 
     def __init__(
             self,
-            s: S,
+            s: ObsType,
             a: int,
             r: float,
-            s_prime: S,
+            s_prime: ObsType,
     ):
-        self._experience: tuple[S, int, float, S] =  (s, a, r, s_prime)
+        self._experience: tuple[ObsType, int, float, ObsType] =  (s, a, r, s_prime)
 
     @property
-    def s(self) -> S:
+    def s(self) -> ObsType:
         return self._experience[0]
 
     @property
@@ -34,5 +39,5 @@ class Experience[S]:
         return self._experience[2]
 
     @property
-    def s_prime(self) -> S:
+    def s_prime(self) -> ObsType:
         return self._experience[3]
