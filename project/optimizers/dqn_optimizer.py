@@ -1,6 +1,8 @@
 import gymnasium as gym
 
-from project.agents import DQNAgent
+from tqdm import trange
+
+from ..agents import DQNAgent
 
 
 class DQNOptimizer:
@@ -16,14 +18,20 @@ class DQNOptimizer:
 
     def optimize(self, episodes: int):
 
-        for _ in range(episodes):
+        for _ in trange(episodes, desc="Episodes: "):
 
-            obs, info = self._env.reset()
+            s, info = self._env.reset()
             e = False
 
             while not e:
 
-                pass
+                a = self._agent.select_action(s=s)
+                s_prime, r, e, _, _ = self._env.step(a)
 
+                self._agent.observe(
+                    a=a,
+                    r=r,
+                    s_prime=s_prime
+                )
 
-
+                s = s_prime

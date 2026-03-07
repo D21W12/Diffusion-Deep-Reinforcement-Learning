@@ -19,6 +19,13 @@ class ReplayMemory:
 
     def sample(self, n) -> tuple[Tensor, Tensor, Tensor, Tensor]:
 
+        if self._empty():
+            raise EmptyBufferError("Can not sample a buffer that does not contain any experiences!")
+
+        # If the buffer is not full yet, we pick the lowest possible sample size.
+        if not self._full:
+            n = min(self._i, n)
+
         size = self._N if self._full else self._i
         sample_idx = torch.randint(size, size=(n,))
 
@@ -47,3 +54,27 @@ class ReplayMemory:
             self._full = True
             return
         self._i += 1
+
+    def _empty(self):
+        return not self._full and self._i == 0
+
+
+class EmptyBufferError(Exception):
+    pass
+
+
+if __name__ == "__main__":
+
+    memory = ReplayMemory(
+        N=100,
+        obs_shape=(1,)
+    )
+
+    s = torch.randint(255, (1,))
+    for i in range(10):
+        s_prime = torch.randint(255, (1,))
+        r = torch.randint(10, (1,))
+        a = torch.randint(6, (1,))
+        memory.add(s, a, r, s_prime)
+
+    print(memory.sample(2))
