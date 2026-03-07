@@ -1,3 +1,4 @@
+import torch
 import gymnasium as gym
 
 
@@ -10,7 +11,6 @@ class BaseWrapper(gym.Wrapper):
             self,
             env: gym.Env,
             frame_stack_size: int = 4,
-            use_torch: bool = True,
             grey_scale: bool = True,
     ) -> None:
         """
@@ -23,7 +23,6 @@ class BaseWrapper(gym.Wrapper):
         env = self._wrap_env(
             env=env,
             frame_stack_size=frame_stack_size,
-            use_torch=use_torch,
             grey_scale=grey_scale,
         )
         super().__init__(env)
@@ -32,11 +31,15 @@ class BaseWrapper(gym.Wrapper):
     def _wrap_env(
             env: gym.Env,
             frame_stack_size: int,
-            use_torch: bool,
             grey_scale: bool,
     ) -> gym.Env:
 
         if grey_scale: env = gym.wrappers.GrayscaleObservation(env)
         env = gym.wrappers.FrameStackObservation(env, frame_stack_size)
-        if use_torch: env = gym.wrappers.NumpyToTorch(env)
+        env = gym.wrappers.NumpyToTorch(env)
+        env = gym.wrappers.TransformObservation(
+            env,
+            lambda s: s.to(torch.float32),
+            env.observation_space
+        )
         return env

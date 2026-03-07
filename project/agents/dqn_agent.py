@@ -7,6 +7,7 @@ from ..nn import DQNMilkyWay
 
 
 class DQNAgent:
+    # TODO: implement target network update frequency
 
     def __init__(
             self,
@@ -29,10 +30,12 @@ class DQNAgent:
 
         self._dqn = DQNMilkyWay(n_actions=n_actions)
         self._target_dqn = DQNMilkyWay(n_actions=n_actions)
+        print("Initializing replay")
         self._memory = ReplayMemory(
             N=replay_size,
             obs_shape=obs_shape
         )
+        print("Done!")
 
         self._optimizer = SGD(
             params=self._dqn.parameters(),
@@ -49,10 +52,11 @@ class DQNAgent:
         self._last_observation = s
 
         # With chance e select a random action
-        if torch.rand() < self._epsilon:
+        if torch.rand((1,)) < self._epsilon:
             return torch.randint(self._n_actions, (1,)).item()
 
-        return self._dqn(s).argmax().item()
+        q_values = self._dqn(s.unsqueeze(0))
+        return q_values.argmax().item()
 
     def observe(self, a, r, s_prime) -> None:
         self._memory.add(
@@ -79,14 +83,14 @@ class DQNAgent:
 
     def _loss(self, s, a, r, s_prime) -> torch.Tensor:
 
-        targets = r + self._discount * self._target_dqn(s_prime).max(dim=0)
+        targets = r + self._discount * self._target_dqn(s_prime).amax(dim=1)
 
         # We detach the computational graph of the target, because we do not need to compute gradients
         # for the target network.
         targets = targets.detach()
 
-        q_values = self._dqn(s)[a]
-        return (targets - q_values)**2
+        q_values = self._dqn(s).amax(dim=1)
+        return ((targets - q_values)**2).mean()
 
     def _update_target_dqn(self) -> None:
         """

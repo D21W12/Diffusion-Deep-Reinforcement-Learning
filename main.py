@@ -18,9 +18,10 @@ obs, info = env.reset()
 
 print(env.observation_space.shape)
 
-for i in range(180):
+while True:
     sleep(1 / FPS)
     obs, reward, terminated, truncated, info = env.step(env.action_space.sample())
+    print(terminated, truncated)
     print(obs.shape)
 
 plt.imshow(obs.squeeze(0), cmap='grey')

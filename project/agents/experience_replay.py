@@ -49,7 +49,7 @@ class ReplayMemory:
     def _increment_i(self) -> None:
 
 
-        if self._i == self._N:
+        if self._i == self._N - 1:
             self._i = 0
             self._full = True
             return

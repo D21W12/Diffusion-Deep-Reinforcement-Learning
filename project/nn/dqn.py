@@ -12,19 +12,22 @@ class DQNMilkyWay(nn.Module):
                 out_channels=16,
                 kernel_size=8,
                 padding=0,
-                stride=4
+                stride=4,
+                bias=False
             ), nn.ReLU(),
             nn.LazyConv2d(
                 out_channels=32,
                 kernel_size=6,
                 padding=0,
-                stride=3
+                stride=3,
+                bias=False
             ), nn.ReLU(),
             nn.LazyConv2d(
                 out_channels=64,
                 kernel_size=4,
                 padding=0,
-                stride=2
+                stride=2,
+                bias=False
             ), nn.ReLU(), nn.Flatten(),
             nn.LazyLinear(
                 out_features=512,
