@@ -26,7 +26,6 @@ if __name__ == "__main__":
     optimizer = DQNOptimizer(
         env=env,
         agent=agent,
-        batch_size=32,
     )
 
     optimizer.optimize(1000)

@@ -8,18 +8,17 @@ from ..agents import DQNAgent
 
 class DQNOptimizer:
     # TODO: implement frame skips
+    # TODO: make loops based on frames instead of episodes
 
     def __init__(
             self,
             env: gym.Env,
             agent: DQNAgent,
-            batch_size: int = 32,
             update_frequency: int = 4
     ) -> None:
 
         self._env = env
         self._agent = agent
-        self._batch_size = batch_size
         self._update_frequency = update_frequency
 
         self._step = 0
@@ -36,20 +35,8 @@ class DQNOptimizer:
                 a = self._agent.select_action(s=s)
                 s_prime, r, e, _, _ = self._env.step(a)
 
-                self._agent.observe(
-                    a=a,
-                    r=r,
-                    s_prime=s_prime
-                )
+                self._agent.observe(a=a, r=r, s_prime=s_prime)
 
-                if self._update_step():
-                    self._agent.update(batch_size=self._batch_size)
+                self._agent.update()
 
                 s = s_prime
-
-    def _update_step(self):
-        if self._step == self._update_frequency:
-            self._step = 0
-            return True
-        self._step += 1
-        return False
