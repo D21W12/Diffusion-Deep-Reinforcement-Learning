@@ -9,7 +9,7 @@ from ..nn import DQNMilkyWay
 
 
 class DQNAgent(Agent):
-    # TODO: Implement saving weights
+    # TODO: Add saving other parts of agent state
 
     def __init__(
             self,

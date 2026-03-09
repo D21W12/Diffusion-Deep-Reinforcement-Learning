@@ -6,6 +6,7 @@ from .on_device import OnDevice
 
 
 class ReplayMemory(OnDevice):
+    # TODO: Fix sampling to be without replacement.
 
     def __init__(self, N: int, obs_shape: tuple):
 
