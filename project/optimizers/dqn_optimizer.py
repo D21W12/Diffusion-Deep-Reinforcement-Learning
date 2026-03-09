@@ -7,6 +7,7 @@ from ..agents import DQNAgent
 
 class DQNOptimizer:
     # TODO: See how actual frame skips change the interaction in the original paper
+    # TODO: Move frame skipping knowledge inside agent class
 
     def __init__(
             self,
