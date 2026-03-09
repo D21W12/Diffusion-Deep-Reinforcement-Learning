@@ -32,7 +32,7 @@ if __name__ == "__main__":
         n_actions=4,
         obs_shape=env.observation_space.shape
     ).to(device)
-    agent.load(PATH)
+    agent.load_weights(PATH)
 
     optimizer = DQNOptimizer(
         env=env,
@@ -40,4 +40,4 @@ if __name__ == "__main__":
     )
 
     optimizer.optimize(25_000)
-    agent.save(PATH)
+    agent.save_weights(PATH)
