@@ -1,5 +1,6 @@
 import ale_py
 import gymnasium as gym
+import torch.mps
 
 from project.environments import BaseWrapper
 from project.agents import DQNAgent
@@ -14,18 +15,25 @@ if __name__ == "__main__":
 
     obs, info = env.reset()
 
+    device = "cpu"
+    if torch.mps.is_available():
+        device = "mps"
+    elif torch.cuda.is_available():
+        device = "cuda"
+    print(f"Using: {device}")
+
     agent = DQNAgent(
+        train=True,
         lr=1e-3,
         discount=0.99,
         replay_size=10000,
         n_actions=4,
         obs_shape=env.observation_space.shape
-    )
-    agent.train()
+    ).to(device)
 
     optimizer = DQNOptimizer(
         env=env,
         agent=agent,
     )
 
-    optimizer.optimize(1000)
+    optimizer.optimize(1_000_000)

@@ -1,5 +1,7 @@
+import numpy as np
 import torch
 import gymnasium as gym
+from torch import Tensor
 
 
 class BaseWrapper(gym.Wrapper):
@@ -27,19 +29,33 @@ class BaseWrapper(gym.Wrapper):
         )
         super().__init__(env)
 
-    @staticmethod
+    def step(self, a: int):
+        s, r, e, t, i = super().step(a)
+        return (
+            self._transform_observation(s),
+            r,
+            e,
+            t,
+            i
+        )
+
+    def reset(self, *args, **kwargs):
+        s, i = super().reset(*args, **kwargs)
+        return self._transform_observation(s), i
+
+    def _transform_observation(self, s: np.ndarray) -> Tensor:
+        return torch.from_numpy(s).to(torch.float32)
+
     def _wrap_env(
+            self,
             env: gym.Env,
             frame_stack_size: int,
             grey_scale: bool,
     ) -> gym.Env:
 
+        def _transform(s: np.ndarray) -> Tensor:
+            return torch.from_numpy(s).to(torch.float32)
+
         if grey_scale: env = gym.wrappers.GrayscaleObservation(env)
         env = gym.wrappers.FrameStackObservation(env, frame_stack_size)
-        env = gym.wrappers.NumpyToTorch(env)
-        env = gym.wrappers.TransformObservation(
-            env,
-            lambda s: s.to(torch.float32),
-            env.observation_space
-        )
         return env

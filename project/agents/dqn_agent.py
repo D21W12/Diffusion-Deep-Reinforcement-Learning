@@ -1,17 +1,19 @@
 import torch
 
+from typing import override
 from torch.optim import SGD
 
+from .base_agent import Agent
 from .experience_replay import ReplayMemory
 from ..nn import DQNMilkyWay
-from ..util import Timer
 
 
-class DQNAgent:
+class DQNAgent(Agent):
     # TODO: implement target network update frequency
 
     def __init__(
             self,
+            train: bool,
             lr: float,
             n_actions: int,
             obs_shape: tuple,
@@ -23,9 +25,9 @@ class DQNAgent:
     ) -> None:
         """Constructor of the DQNAgent class."""
 
-        super().__init__()
+        super().__init__(train=train)
 
-        self._train = False
+        self._device = "cpu"
 
         self._n_actions = n_actions
         self._obs_shape = obs_shape
@@ -35,12 +37,12 @@ class DQNAgent:
         self._target_update_frequency = target_update_frequency
         self._batch_size = batch_size
 
-        self._dqn = DQNMilkyWay(n_actions=n_actions)
-        self._target_dqn = DQNMilkyWay(n_actions=n_actions)
+        self._dqn = DQNMilkyWay(n_actions=n_actions).to(self._device)
+        self._target_dqn = DQNMilkyWay(n_actions=n_actions).to(self._device)
         self._memory = ReplayMemory(
             N=replay_size,
             obs_shape=obs_shape
-        )
+        ).to(self._device)
 
         self._optimizer = SGD(
             params=self._dqn.parameters(),
@@ -63,6 +65,7 @@ class DQNAgent:
         if self._train and torch.rand((1,)) < self._epsilon:
             return torch.randint(self._n_actions, (1,)).item()
 
+        s = s.to(self._device)
         with torch.no_grad():
             q_values = self._dqn(s.unsqueeze(0))
         return q_values.argmax().item()
@@ -91,6 +94,9 @@ class DQNAgent:
 
         s, a, r, s_prime = self._memory.sample(n=self._batch_size)
 
+        device = self._device
+        s, r, s_prime = s.to(device), r.to(device), s_prime.to(device)
+
         loss = self._loss(s, a, r, s_prime)
         loss.backward()  # Computing gradients
         self._optimizer.step()
@@ -101,12 +107,11 @@ class DQNAgent:
 
     def _loss(self, s, a, r, s_prime) -> torch.Tensor:
 
-        targets = r + self._discount * self._target_dqn(s_prime).amax(dim=1)
-
         # We detach the computational graph of the target, because we do not need to compute gradients
         # for the target network.
         with torch.no_grad():
-            targets = targets
+            targets = r + self._discount * self._target_dqn(s_prime).amax(dim=1)
+            targets = targets.detach()
 
         q_values = self._dqn(s).amax(dim=1)
         return ((targets - q_values)**2).mean()
@@ -134,18 +139,12 @@ class DQNAgent:
     def _is_target_update_step(self):
         return self._updates % self._target_update_frequency == 0
 
-    def train(self) -> bool:
-        """
-        Method for setting the agent in training mode. Inheritance implementations
-        should set all training settings using this method.
-        """
-        self._train = True
-        return self._train
+    @override
+    def to(self, device: str) -> 'DQNAgent':
+        super().to(device)
 
-    def test(self) -> bool:
-        """
-        Method for setting the agent in testing mode. Inheritance implementations
-        should set all test settings using this method.
-        """
-        self._train = False
-        return self._train
+        self._dqn.to(device)
+        self._target_dqn.to(device)
+        self._memory.to(device)
+
+        return self

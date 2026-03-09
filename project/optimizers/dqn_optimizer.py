@@ -14,29 +14,37 @@ class DQNOptimizer:
             self,
             env: gym.Env,
             agent: DQNAgent,
-            update_frequency: int = 4
+            k: int = 4,
     ) -> None:
 
         self._env = env
         self._agent = agent
-        self._update_frequency = update_frequency
+
+        self._k = k
 
         self._step = 0
 
-    def optimize(self, episodes: int):
+    def optimize(self, frames: int):
 
-        for _ in trange(episodes, desc="Episodes: "):
+        e = True
+        a = None
+        frame = 0
 
-            s, info = self._env.reset()
-            e = False
+        for _ in trange(frames, desc="Frames: "):
 
-            while not e:
+            if e:
+                s, info = self._env.reset()
 
+            if frame % self._k == 0:
                 a = self._agent.select_action(s=s)
                 s_prime, r, e, _, _ = self._env.step(a)
 
                 self._agent.observe(a=a, r=r, s_prime=s_prime)
-
                 self._agent.update()
 
                 s = s_prime
+
+            else:
+                s, _, e, _, _ = self._env.step(a)
+
+            frames += 1

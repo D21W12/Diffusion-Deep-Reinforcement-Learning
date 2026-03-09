@@ -2,8 +2,10 @@ import torch
 
 from torch import Tensor
 
+from .on_device import OnDevice
 
-class ReplayMemory:
+
+class ReplayMemory(OnDevice):
 
     def __init__(self, N: int, obs_shape: tuple):
 
@@ -12,10 +14,10 @@ class ReplayMemory:
         self._full = False
 
         # Experience buffers
-        self._s = torch.zeros(size=(N,) + obs_shape)
-        self._a = torch.zeros(size=(N,))
-        self._r = torch.zeros(size=(N,))
-        self._s_prime = torch.zeros(size=(N,)  + obs_shape)
+        self._s = torch.zeros(size=(N,) + obs_shape, requires_grad=False)
+        self._a = torch.zeros(size=(N,), requires_grad=False)
+        self._r = torch.zeros(size=(N,), requires_grad=False)
+        self._s_prime = torch.zeros(size=(N,)  + obs_shape, requires_grad=False)
 
     def sample(self, n) -> tuple[Tensor, Tensor, Tensor, Tensor]:
 
