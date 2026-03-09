@@ -8,6 +8,8 @@ from project.optimizers import DQNOptimizer
 
 if __name__ == "__main__":
 
+    PATH = "../weights/milkyway_test.pth"
+
     gym.register_envs(ale_py)
 
     env = gym.make('ALE/Breakout-v5')
@@ -30,10 +32,12 @@ if __name__ == "__main__":
         n_actions=4,
         obs_shape=env.observation_space.shape
     ).to(device)
+    agent.load(PATH)
 
     optimizer = DQNOptimizer(
         env=env,
         agent=agent,
     )
 
-    optimizer.optimize(1_000_000)
+    optimizer.optimize(25_000)
+    agent.save(PATH)

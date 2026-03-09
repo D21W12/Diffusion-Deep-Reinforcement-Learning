@@ -139,6 +139,14 @@ class DQNAgent(Agent):
     def _is_target_update_step(self):
         return self._updates % self._target_update_frequency == 0
 
+    def save_weights(self, f):
+        torch.save(self._dqn.state_dict(), f)
+
+    def load_weights(self, f):
+        state_dict = torch.load(f, weights_only=True)
+        self._dqn.load_state_dict(state_dict)
+        self._target_dqn.load_state_dict(state_dict)
+
     @override
     def to(self, device: str) -> 'DQNAgent':
         super().to(device)
