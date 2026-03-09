@@ -7,8 +7,7 @@ from ..agents import DQNAgent
 
 
 class DQNOptimizer:
-    # TODO: implement frame skips
-    # TODO: make loops based on frames instead of episodes
+    # TODO: See how actual frame skips change the interaction in the original paper
 
     def __init__(
             self,
@@ -47,4 +46,4 @@ class DQNOptimizer:
             else:
                 s, _, e, _, _ = self._env.step(a)
 
-            frames += 1
+            frame += 1

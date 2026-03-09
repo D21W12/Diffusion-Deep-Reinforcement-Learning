@@ -9,7 +9,7 @@ from ..nn import DQNMilkyWay
 
 
 class DQNAgent(Agent):
-    # TODO: implement target network update frequency
+    # TODO: Implement saving weights
 
     def __init__(
             self,
