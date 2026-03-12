@@ -22,6 +22,7 @@ class DQNAgent(Agent):
             update_frequency: int = 4,
             target_update_frequency: int = 4,
             batch_size: int = 32,
+            frame_skips: int = 4
     ) -> None:
         """Constructor of the DQNAgent class."""
 
@@ -35,6 +36,7 @@ class DQNAgent(Agent):
         self._discount = discount
         self._update_frequency = update_frequency
         self._target_update_frequency = target_update_frequency
+        self._frame_skips = frame_skips
         self._batch_size = batch_size
 
         self._dqn = DQNMilkyWay(n_actions=n_actions).to(self._device)
@@ -50,16 +52,27 @@ class DQNAgent(Agent):
         )
 
         self._last_observation = None
+        self._last_action = None
         self._epsilon = 1
         self._updates = 0
-        self._actions_selected = 0
+        self._frames_seen = 0
 
 
     def select_action(self, s) -> int:
 
         # Save the last observation
         self._last_observation = s
-        self._actions_selected += 1
+        self._frames_seen += 1
+        print("Frame")
+
+        # We only select a new action on non-skipped frames
+        if self._is_action_select_step():
+            self._last_action = self._select_action(s)
+            print("New action selected")
+
+        return self._last_action
+
+    def _select_action(self, s) -> int:
 
         # With chance e select a random action (during training)
         if self._train and torch.rand((1,)) < self._epsilon:
@@ -69,6 +82,9 @@ class DQNAgent(Agent):
         with torch.no_grad():
             q_values = self._dqn(s.unsqueeze(0))
         return q_values.argmax().item()
+
+    def _is_action_select_step(self):
+        return (self._frames_seen - 1) % self._frame_skips == 0
 
     def observe(self, a, r, s_prime) -> None:
         self._memory.add(
@@ -86,6 +102,7 @@ class DQNAgent(Agent):
 
         if self._is_gradient_step():
             self._update_network()
+            print("Updating network")
 
         self._update_epsilon()
 
@@ -134,7 +151,11 @@ class DQNAgent(Agent):
         self._epsilon = min(0.1, self._epsilon - 0.9 * 1e-6)
 
     def _is_gradient_step(self):
-        return self._actions_selected % self._update_frequency == 0
+        # print(f"Frames seen: {self._frames_seen} frames")
+        # print(f"Update network every: {self._update_frequency * self._frame_skips} frames")
+        # print(f"Modulo result: {self._frames_seen % (self._update_frequency * self._frame_skips)}")
+        # TODO: Fix timing of action selection step
+        return self._frames_seen % (self._update_frequency * self._frame_skips) == 0
 
     def _is_target_update_step(self):
         return self._updates % self._target_update_frequency == 0
