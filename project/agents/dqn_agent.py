@@ -13,10 +13,10 @@ class DQNAgent(Agent):
 
     def __init__(
             self,
-            train: bool,
-            lr: float,
             n_actions: int,
             obs_shape: tuple,
+            train: bool,
+            lr: float = 1e-3,
             replay_size: int = 1000000,
             discount: float = 0.99,
             update_frequency: int = 4,
@@ -26,11 +26,10 @@ class DQNAgent(Agent):
     ) -> None:
         """Constructor of the DQNAgent class."""
 
-        super().__init__(train=train)
+        super().__init__(train=train, n_actions=n_actions)
 
         self._device = "cpu"
 
-        self._n_actions = n_actions
         self._obs_shape = obs_shape
 
         self._discount = discount

@@ -8,7 +8,7 @@ from project.environments.loops import TrainingLoop
 
 if __name__ == "__main__":
 
-    PATH = "../weights/milkyway_test_cuda.pth"
+    PATH = "../parameters/milkyway_test_cuda.pth"
 
     gym.register_envs(ale_py)
 

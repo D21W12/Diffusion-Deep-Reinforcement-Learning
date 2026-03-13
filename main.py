@@ -1,29 +1,25 @@
 import ale_py
 import gymnasium as gym
-import matplotlib.pyplot as plt
 
-from time import sleep
-
+from project.agents.random_agent import RandomAgent
 from project.environments import BaseWrapper
+from project.environments.loops import TestingLoop
 
 
-gym.register_envs(ale_py)
+if __name__ == "__main__":
 
-FPS = 60
-VISUAL = True
+    gym.register_envs(ale_py)
 
-env = gym.make('ALE/Breakout-v5', render_mode='human' if VISUAL else None)
-env = BaseWrapper(env, frame_stack_size=4)
-obs, info = env.reset()
+    env = gym.make('ALE/Breakout-v5', render_mode='human' )
+    env = BaseWrapper(env, frame_stack_size=4)
 
-print(env.observation_space.shape)
+    agent = RandomAgent(
+        train=False,
+        n_actions=4,
+    )
 
-while True:
-    sleep(1 / FPS)
-    obs, reward, terminated, truncated, info = env.step(env.action_space.sample())
-    print(terminated, truncated)
-    print(obs.shape)
-
-plt.imshow(obs.squeeze(0), cmap='grey')
-plt.show()
-env.close()
+    loop = TestingLoop(
+        env=env,
+        agent=agent
+    )
+    loop.run()

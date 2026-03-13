@@ -12,9 +12,9 @@ class TestingLoop(Loop):
             agent: Agent,
     ) -> None:
         super().__init__(env=env, agent=agent)
-        s, info = self._env.reset()
 
-    def run(self, frames: int):
+    def run(self):
+        s, info = self._env.reset()
         while True:
             a = self._agent.select_action(s=s)
             s_prime, r, e, _, _ = self._env.step(a)

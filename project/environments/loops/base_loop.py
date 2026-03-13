@@ -1,13 +1,13 @@
-from abc import abstractmethod
-
 import gymnasium as gym
+
+from abc import abstractmethod, ABC
 
 from tqdm import tqdm
 
 from ...agents import Agent
 
 
-class Loop:
+class Loop(ABC):
 
     def __init__(
             self,
@@ -19,5 +19,5 @@ class Loop:
         self._agent = agent
 
     @abstractmethod
-    def run(self, frames: int):
+    def run(self):
         pass
