@@ -16,13 +16,15 @@ class DQNAgent(Agent):
             n_actions: int,
             obs_shape: tuple,
             train: bool,
-            lr: float = 1e-3,
+            lr: float = 25e-4,
             replay_size: int = 1000000,
             discount: float = 0.99,
             update_frequency: int = 4,
             target_update_frequency: int = 4,
             batch_size: int = 32,
-            frame_skips: int = 4
+            frame_skips: int = 4,
+            replay_start_size: int = 50000,
+            final_exploration_frame: int = 1000000
     ) -> None:
         """Constructor of the DQNAgent class."""
 
@@ -36,6 +38,8 @@ class DQNAgent(Agent):
         self._update_frequency = update_frequency
         self._target_update_frequency = target_update_frequency
         self._frame_skips = frame_skips
+        self._replay_start_size = replay_start_size
+        self._final_exploration_frame = final_exploration_frame
         self._batch_size = batch_size
 
         self._dqn = DQNMilkyWay(n_actions=n_actions).to(self._device)
@@ -69,7 +73,7 @@ class DQNAgent(Agent):
     def _select_action(self, s) -> int:
 
         # With chance e select a random action (during training)
-        if self._train and torch.rand((1,)) < self._epsilon:
+        if self._random_action():
             return torch.randint(self._n_actions, (1,)).item()
 
         s = s.to(self._device)
@@ -77,8 +81,14 @@ class DQNAgent(Agent):
             q_values = self._dqn(s.unsqueeze(0))
         return q_values.argmax().item()
 
+    def _random_action(self):
+        return (self._train and torch.rand((1,)) < self._epsilon) or self._frames_seen < self._replay_start_size
+
     def _is_action_select_step(self):
         return (self._frames_seen - 1) % self._frame_skips == 0
+
+    def _is_starting_step(self):
+        return self._frames_seen < self._replay_start_size
 
     def observe(self, s, a, r, s_prime) -> None:
 
@@ -145,7 +155,8 @@ class DQNAgent(Agent):
         - Annealed linearly from 1 to 0.1 over 1 million updates.
         - Clipped at 0.1
         """
-        self._epsilon = min(0.1, self._epsilon - 0.9 * 1e-6)
+        if self._frames_seen < self._final_exploration_frame:
+            self._epsilon -= 0.9 / self._final_exploration_frame
 
     def _is_gradient_step(self):
         return (self._frames_seen - 1) % (self._update_frequency * self._frame_skips) == 0
