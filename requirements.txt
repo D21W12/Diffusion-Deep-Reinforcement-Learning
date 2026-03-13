@@ -3,3 +3,4 @@ torchvision
 gymnasium[atari]
 matplotlib
 tqdm
+notebook
