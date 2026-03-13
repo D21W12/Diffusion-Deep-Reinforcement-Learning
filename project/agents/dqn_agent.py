@@ -9,7 +9,7 @@ from ..nn import DQNMilkyWay
 
 
 class DQNAgent(Agent):
-    # TODO: Add saving other parts of agent state
+    # TODO: Remove being able to change train mode
 
     def __init__(
             self,
@@ -47,7 +47,7 @@ class DQNAgent(Agent):
         self._memory = ReplayMemory(
             N=replay_size,
             obs_shape=obs_shape
-        ).to(self._device)
+        ).to(self._device) if train else None
 
         self._optimizer = SGD(
             params=self._dqn.parameters(),
@@ -90,6 +90,9 @@ class DQNAgent(Agent):
         return self._frames_seen < self._replay_start_size
 
     def observe(self, s, a, r, s_prime) -> None:
+
+        if not self._train:
+            raise Exception("Agent must be set to train mode before being able to observe experiences.")
 
         # Storing the last observation
         self._last_observation = s
@@ -174,7 +177,6 @@ class DQNAgent(Agent):
             'last_observation': self._last_observation,
             'last_action': self._last_action,
             'epsilon': self._epsilon,
-            'updates': self._updates,
             'frames_seen': self._frames_seen,
             'dqn_state_dict': self._dqn.state_dict(),
             'target_dqn_state_dict': self._dqn.state_dict(),
@@ -187,7 +189,6 @@ class DQNAgent(Agent):
         self._last_observation = data['last_observation']
         self._last_action = data['last_action']
         self._epsilon = data['epsilon']
-        self._updates = data['updates']
         self._frames_seen = data['frames_seen']
 
         self._dqn.load_state_dict(data['dqn_state_dict'])

@@ -1,7 +1,7 @@
 import ale_py
 import gymnasium as gym
 
-from project.agents.random_agent import RandomAgent
+from project.agents import DQNAgent
 from project.environments import BaseWrapper
 from project.environments.loops import TestingLoop
 
@@ -13,9 +13,10 @@ if __name__ == "__main__":
     env = gym.make('ALE/Breakout-v5', render_mode='human' )
     env = BaseWrapper(env, frame_stack_size=4)
 
-    agent = RandomAgent(
+    agent = DQNAgent(
         train=False,
         n_actions=4,
+        obs_shape=env.observation_space.shape
     )
 
     loop = TestingLoop(
