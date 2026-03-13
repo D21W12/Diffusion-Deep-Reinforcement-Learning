@@ -63,12 +63,10 @@ class DQNAgent(Agent):
         # Save the last observation
         self._last_observation = s
         self._frames_seen += 1
-        print("Frame")
 
         # We only select a new action on non-skipped frames
         if self._is_action_select_step():
             self._last_action = self._select_action(s)
-            print("New action selected")
 
         return self._last_action
 
@@ -102,7 +100,6 @@ class DQNAgent(Agent):
 
         if self._is_gradient_step():
             self._update_network()
-            print("Updating network")
 
         self._update_epsilon()
 
@@ -151,11 +148,7 @@ class DQNAgent(Agent):
         self._epsilon = min(0.1, self._epsilon - 0.9 * 1e-6)
 
     def _is_gradient_step(self):
-        # print(f"Frames seen: {self._frames_seen} frames")
-        # print(f"Update network every: {self._update_frequency * self._frame_skips} frames")
-        # print(f"Modulo result: {self._frames_seen % (self._update_frequency * self._frame_skips)}")
-        # TODO: Fix timing of action selection step
-        return self._frames_seen % (self._update_frequency * self._frame_skips) == 0
+        return (self._frames_seen - 1) % (self._update_frequency * self._frame_skips) == 0
 
     def _is_target_update_step(self):
         return self._updates % self._target_update_frequency == 0
