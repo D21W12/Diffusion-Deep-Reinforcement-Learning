@@ -4,7 +4,7 @@ import torch.mps
 
 from project.environments import BaseWrapper
 from project.agents import DQNAgent
-from project.optimizers import DQNOptimizer
+from project.environments.loops import TrainingLoop
 
 if __name__ == "__main__":
 
@@ -34,10 +34,10 @@ if __name__ == "__main__":
     ).to(device)
     # agent.load_weights(PATH)
 
-    optimizer = DQNOptimizer(
+    optimizer = TrainingLoop(
         env=env,
         agent=agent,
     )
 
-    optimizer.optimize(1_000_000)
+    optimizer.run(1_000_000)
     agent.save_weights(PATH)

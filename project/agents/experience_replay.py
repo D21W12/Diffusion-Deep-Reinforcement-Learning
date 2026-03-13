@@ -18,7 +18,6 @@ class ReplayMemory(OnDevice):
         self._s = torch.zeros(size=(N + 1,) + obs_shape, requires_grad=False)
         self._a = torch.zeros(size=(N,), requires_grad=False)
         self._r = torch.zeros(size=(N,), requires_grad=False)
-        # self._s_prime = torch.zeros(size=(N,)  + obs_shape, requires_grad=False)
 
     def sample(self, n) -> tuple[Tensor, Tensor, Tensor, Tensor]:
 
@@ -39,7 +38,7 @@ class ReplayMemory(OnDevice):
             self._s[sample_idx],
             self._a[sample_idx],
             self._r[sample_idx],
-            self._s[sample_idx + 1]
+            self._s[sample_idx + 1]  # We sample s_prime as the idx + 1, as this index contains the next state.
         )
 
     def add(self, s, a, r, s_prime) -> None:

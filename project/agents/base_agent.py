@@ -26,3 +26,15 @@ class Agent(OnDevice, ABC):
         """
         self._train = False
         return self._train
+
+    @abstractmethod
+    def select_action(self, s):
+        pass
+
+    @abstractmethod
+    def observe(self, s, a, r, s_prime):
+        pass
+
+    @abstractmethod
+    def update(self):
+        pass

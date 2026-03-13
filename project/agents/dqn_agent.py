@@ -57,11 +57,8 @@ class DQNAgent(Agent):
         self._updates = 0
         self._frames_seen = 0
 
-
     def select_action(self, s) -> int:
 
-        # Save the last observation
-        self._last_observation = s
         self._frames_seen += 1
 
         # We only select a new action on non-skipped frames
@@ -84,9 +81,13 @@ class DQNAgent(Agent):
     def _is_action_select_step(self):
         return (self._frames_seen - 1) % self._frame_skips == 0
 
-    def observe(self, a, r, s_prime) -> None:
+    def observe(self, s, a, r, s_prime) -> None:
+
+        # Storing the last observation
+        self._last_observation = s
+
         self._memory.add(
-            s=self._last_observation,
+            s=s,
             a=a,
             r=r,
             s_prime=s_prime
@@ -153,13 +154,29 @@ class DQNAgent(Agent):
     def _is_target_update_step(self):
         return self._updates % self._target_update_frequency == 0
 
-    def save_weights(self, f):
-        torch.save(self._dqn.state_dict(), f)
+    def save(self, f):
+        torch.save({
+            'last_observation': self._last_observation,
+            'last_action': self._last_action,
+            'epsilon': self._epsilon,
+            'updates': self._updates,
+            'frames_seen': self._frames_seen,
+            'dqn_state_dict': self._dqn.state_dict(),
+            'target_dqn_state_dict': self._dqn.state_dict(),
+            'optimizer_state_dict': self._optimizer.state_dict()
+        }, f)
 
-    def load_weights(self, f):
-        state_dict = torch.load(f, weights_only=True)
-        self._dqn.load_state_dict(state_dict)
-        self._target_dqn.load_state_dict(state_dict)
+    def load(self, f):
+        data = torch.load(f, weights_only=True)
+
+        self._last_observation = data['last_observation']
+        self._last_action = data['last_action']
+        self._epsilon = data['epsilon']
+        self._updates = data['updates']
+        self._frames_seen = data['frames_seen']
+
+        self._dqn.load_state_dict(data['dqn_state_dict'])
+        self._target_dqn.load_state_dict(data['target_dqn_state_dict'])
 
     @override
     def to(self, device: str) -> 'DQNAgent':
