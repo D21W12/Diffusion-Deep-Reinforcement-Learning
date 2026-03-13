@@ -28,7 +28,7 @@ if __name__ == "__main__":
         train=True,
         lr=1e-3,
         discount=0.99,
-        replay_size=10000,
+        replay_size=25000,
         n_actions=4,
         obs_shape=env.observation_space.shape
     ).to(device)

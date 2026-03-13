@@ -15,12 +15,15 @@ class ReplayMemory(OnDevice):
         self._full = False
 
         # Experience buffers
-        self._s = torch.zeros(size=(N,) + obs_shape, requires_grad=False)
+        self._s = torch.zeros(size=(N + 1,) + obs_shape, requires_grad=False)
         self._a = torch.zeros(size=(N,), requires_grad=False)
         self._r = torch.zeros(size=(N,), requires_grad=False)
-        self._s_prime = torch.zeros(size=(N,)  + obs_shape, requires_grad=False)
+        # self._s_prime = torch.zeros(size=(N,)  + obs_shape, requires_grad=False)
 
     def sample(self, n) -> tuple[Tensor, Tensor, Tensor, Tensor]:
+
+        if n > self._N:
+            raise ValueError("Sample size can not be bigger than the buffer itself!")
 
         if self._empty():
             raise EmptyBufferError("Can not sample a buffer that does not contain any experiences!")
@@ -36,7 +39,7 @@ class ReplayMemory(OnDevice):
             self._s[sample_idx],
             self._a[sample_idx],
             self._r[sample_idx],
-            self._s_prime[sample_idx]
+            self._s[sample_idx + 1]
         )
 
     def add(self, s, a, r, s_prime) -> None:
@@ -45,7 +48,7 @@ class ReplayMemory(OnDevice):
         self._s[self._i] = s
         self._a[self._i] = a
         self._r[self._i] = r
-        self._s_prime[self._i] = s_prime
+        self._s[self._i + 1] = s_prime
 
         self._increment_i()
 
