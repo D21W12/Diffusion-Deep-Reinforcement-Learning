@@ -57,7 +57,6 @@ class DQNAgent(Agent):
         self._last_observation = None
         self._last_action = None
         self._epsilon = 1
-        self._updates = 0
         self._frames_seen = 0
 
     def select_action(self, s) -> int:
@@ -82,7 +81,7 @@ class DQNAgent(Agent):
         return q_values.argmax().item()
 
     def _random_action(self):
-        return (self._train and torch.rand((1,)) < self._epsilon) or self._frames_seen < self._replay_start_size
+        return self._train and (torch.rand((1,)) < self._epsilon or self._is_starting_step())
 
     def _is_action_select_step(self):
         return (self._frames_seen - 1) % self._frame_skips == 0
@@ -108,13 +107,12 @@ class DQNAgent(Agent):
         if not self._train:
             raise Exception("Agent must be set to train mode before being able to update parameters.")
 
-        if self._is_gradient_step():
+        if self._is_update_step():
             self._update_network()
 
         self._update_epsilon()
 
     def _update_network(self):
-        self._updates += 1
 
         s, a, r, s_prime = self._memory.sample(n=self._batch_size)
 
@@ -158,11 +156,18 @@ class DQNAgent(Agent):
         if self._frames_seen < self._final_exploration_frame:
             self._epsilon -= 0.9 / self._final_exploration_frame
 
-    def _is_gradient_step(self):
-        return (self._frames_seen - 1) % (self._update_frequency * self._frame_skips) == 0
+    def _is_update_step(self):
+        if (self._frames_seen - 1) < self._replay_start_size:
+            return False
+        return (self._learning_frames - 1) % (self._update_frequency * self._frame_skips) == 0
 
     def _is_target_update_step(self):
-        return self._updates % self._target_update_frequency == 0
+        frequency = self._target_update_frequency * self._update_frequency * self._frame_skips
+        return (self._learning_frames - 1) % frequency == 0
+
+    @property
+    def _learning_frames(self):
+        return self._frames_seen - self._replay_start_size
 
     def save(self, f):
         torch.save({
