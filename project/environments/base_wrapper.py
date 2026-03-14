@@ -8,6 +8,7 @@ class BaseWrapper(gym.Wrapper):
     """
     Base
     """
+    FIRE = 1
 
     def __init__(
             self,
@@ -40,7 +41,8 @@ class BaseWrapper(gym.Wrapper):
         )
 
     def reset(self, *args, **kwargs):
-        s, i = super().reset(*args, **kwargs)
+        super().reset(*args, **kwargs)
+        s, r, e, t, i = self.env.step(self.FIRE)  # Makes sure the env always fires on reset
         return self._transform_observation(s), i
 
     def _transform_observation(self, s: np.ndarray) -> Tensor:
@@ -59,4 +61,5 @@ class BaseWrapper(gym.Wrapper):
         if grey_scale: env = gym.wrappers.GrayscaleObservation(env)
         env = gym.wrappers.FrameStackObservation(env, frame_stack_size)
         env = gym.wrappers.ClipReward(env, -1, 1)
+        env = gym.wrappers.FireReset
         return env
