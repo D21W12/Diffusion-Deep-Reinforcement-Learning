@@ -58,4 +58,5 @@ class BaseWrapper(gym.Wrapper):
 
         if grey_scale: env = gym.wrappers.GrayscaleObservation(env)
         env = gym.wrappers.FrameStackObservation(env, frame_stack_size)
+        env = gym.wrappers.ClipReward(env, -1, 1)
         return env
