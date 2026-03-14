@@ -55,9 +55,6 @@ class BaseWrapper(gym.Wrapper):
             grey_scale: bool,
     ) -> gym.Env:
 
-        def _transform(s: np.ndarray) -> Tensor:
-            return torch.from_numpy(s).to(torch.float32)
-
         if grey_scale: env = gym.wrappers.GrayscaleObservation(env)
         env = gym.wrappers.FrameStackObservation(env, frame_stack_size)
         env = gym.wrappers.ClipReward(env, -1, 1)
