@@ -1,3 +1,5 @@
+import os
+
 import ale_py
 import gymnasium as gym
 
@@ -7,6 +9,8 @@ from project.environments.loops import TestingLoop
 
 
 if __name__ == "__main__":
+
+    PATH = os.path.join("parameters", "milkyway_500k_140326.pth")
 
     gym.register_envs(ale_py)
 
@@ -18,6 +22,9 @@ if __name__ == "__main__":
         n_actions=4,
         obs_shape=env.observation_space.shape
     )
+    if os.path.exists(PATH):
+        agent.load(PATH)
+        print("Loaded existing parameters")
 
     loop = TestingLoop(
         env=env,
