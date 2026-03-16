@@ -123,8 +123,9 @@ class DQNAgent(Agent):
         # We detach the computational graph of the target, because
         # we do not need to compute gradients for the target network.
         with torch.no_grad():
+            nt = ~t
             targets = torch.zeros((self._batch_size,), device=self._device)
-            targets[~t] = r[~t] + self._discount * self._target_dqn(s_prime[~t]).amax(dim=1)
+            targets[nt] = r[nt] + self._discount * self._target_dqn(s_prime[nt]).amax(dim=1)
             targets[t] = r[t]
             targets = targets.detach()
 
