@@ -14,7 +14,6 @@ class BaseWrapper(gym.Wrapper):
             self,
             env: gym.Env,
             frame_stack_size: int = 4,
-            grey_scale: bool = True,
     ) -> None:
         """
         Constructor of BaseEnvWrapper
@@ -26,7 +25,6 @@ class BaseWrapper(gym.Wrapper):
         env = self._wrap_env(
             env=env,
             frame_stack_size=frame_stack_size,
-            grey_scale=grey_scale,
         )
         super().__init__(env)
 
@@ -41,8 +39,7 @@ class BaseWrapper(gym.Wrapper):
         )
 
     def reset(self, *args, **kwargs):
-        super().reset(*args, **kwargs)
-        s, r, e, t, i = self.env.step(self.FIRE)  # Makes sure the env always fires on reset
+        s, i = super().reset(*args, **kwargs)
         return self._transform_observation(s), i
 
     def _transform_observation(self, s: np.ndarray) -> Tensor:
@@ -52,10 +49,15 @@ class BaseWrapper(gym.Wrapper):
             self,
             env: gym.Env,
             frame_stack_size: int,
-            grey_scale: bool,
     ) -> gym.Env:
 
-        if grey_scale: env = gym.wrappers.GrayscaleObservation(env)
+        env = gym.wrappers.AtariPreprocessing(env)
         env = gym.wrappers.FrameStackObservation(env, frame_stack_size)
-        env = gym.wrappers.ClipReward(env, -1, 1)
+
+        return env
+
+    @staticmethod
+    def create_environment(id, frame_stack_size: int = 4):
+        env = gym.make(id, frameskip=1)
+        env = BaseWrapper(env, frame_stack_size=frame_stack_size)
         return env

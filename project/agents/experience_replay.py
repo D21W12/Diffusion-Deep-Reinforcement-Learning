@@ -2,34 +2,31 @@ import torch
 
 from torch import Tensor
 
-from .on_device import OnDevice
 
-
-class ReplayMemory(OnDevice):
+class ReplayMemory:
     # TODO: Fix sampling to be without replacement.
 
     def __init__(self, N: int, obs_shape: tuple):
+
+        super().__init__()
 
         self._N = N
         self._i = 0  # Pointer to the last saved experience
         self._full = False
 
         # Experience buffers
-        self._s = torch.zeros(size=(N + 1,) + obs_shape, requires_grad=False)
-        self._a = torch.zeros(size=(N,), requires_grad=False)
-        self._r = torch.zeros(size=(N,), requires_grad=False)
+        self._s = torch.zeros(size=(N + 1,) + obs_shape)
+        self._a = torch.zeros(size=(N,), dtype=torch.int)
+        self._r = torch.zeros(size=(N,))
+        self._t = torch.zeros(size=(N,), dtype=torch.bool)
 
-    def sample(self, n) -> tuple[Tensor, Tensor, Tensor, Tensor]:
+    def sample(self, n) -> tuple[Tensor, Tensor, Tensor, Tensor, Tensor]:
 
         if n > self._N:
             raise ValueError("Sample size can not be bigger than the buffer itself!")
 
         if self._empty():
             raise EmptyBufferError("Can not sample a buffer that does not contain any experiences!")
-
-        # If the buffer is not full yet, we pick the lowest possible sample size.
-        if not self._full:
-            n = min(self._i, n)
 
         size = self._N if self._full else self._i
         sample_idx = torch.randint(size, size=(n,))
@@ -38,16 +35,18 @@ class ReplayMemory(OnDevice):
             self._s[sample_idx],
             self._a[sample_idx],
             self._r[sample_idx],
-            self._s[sample_idx + 1]  # We sample s_prime as the idx + 1, as this index contains the next state.
+            self._s[sample_idx + 1],  # We sample s_prime as the idx + 1, as this index contains the next state.
+            self._t[sample_idx]
         )
 
-    def add(self, s, a, r, s_prime) -> None:
+    def add(self, s, a, r, s_prime, t) -> None:
 
         # Save Experience
         self._s[self._i] = s
         self._a[self._i] = a
         self._r[self._i] = r
         self._s[self._i + 1] = s_prime
+        self._t[self._i] = t
 
         self._increment_i()
 

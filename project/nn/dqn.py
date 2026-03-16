@@ -2,6 +2,46 @@ import torch
 import torch.nn as nn
 
 
+class DQNRedKnight(nn.Module):
+
+    def __init__(self, n_actions: int):
+        super().__init__()
+
+        self._network = nn.Sequential(
+            nn.LazyConv2d(
+                out_channels=32,
+                kernel_size=8,
+                padding=0,
+                stride=4,
+                bias=True
+            ), nn.ReLU(),
+            nn.LazyConv2d(
+                out_channels=64,
+                kernel_size=4,
+                padding=0,
+                stride=2,
+                bias=True
+            ), nn.ReLU(),
+            nn.LazyConv2d(
+                out_channels=64,
+                kernel_size=3,
+                padding=0,
+                stride=1,
+                bias=True
+            ), nn.ReLU(), nn.Flatten(),
+            nn.LazyLinear(
+                out_features=512,
+                bias=True
+            ), nn.ReLU(),
+            nn.LazyLinear(
+                out_features=n_actions
+            ),
+        )
+
+    def forward(self, X):
+        return self._network(X)
+
+
 class DQNMilkyWay(nn.Module):
 
     def __init__(self, n_actions: int):
