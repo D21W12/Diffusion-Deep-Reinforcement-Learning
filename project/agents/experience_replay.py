@@ -30,7 +30,7 @@ class ReplayMemory:
             raise EmptyBufferError("Can not sample a buffer that does not contain any experiences!")
 
         size = self._N if self._full else self._i
-        sample_idx = torch.randperm(size)[:n]
+        sample_idx = torch.randint(0, size, size=(n,))
 
         return (
             self._s[sample_idx],

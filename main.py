@@ -10,7 +10,7 @@ from project.environments.loops import TestingLoop
 
 if __name__ == "__main__":
 
-    PATH = os.path.join("parameters", "milkyway_500k_140326.pth")
+    PATH = os.path.join("parameters", "model-170326.pth")
 
     gym.register_envs(ale_py)
 

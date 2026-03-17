@@ -1,8 +1,9 @@
+from random import random
 from typing import override
 
 import torch
 
-from torch.optim import Adam
+from torch.optim import RMSprop
 
 from .base_agent import Agent
 from .experience_replay import ReplayMemory
@@ -19,6 +20,7 @@ class DQNAgent(Agent):
             lr: float = 25e-4,
             replay_size: int = 1000000,
             discount: float = 0.99,
+            update_frequency: int = 4,
             target_update_frequency: int = 10000,
             batch_size: int = 32,
             replay_start_size: int = 50000,
@@ -34,6 +36,7 @@ class DQNAgent(Agent):
         self._obs_shape = obs_shape
 
         self._discount = discount
+        self._update_frequency = update_frequency
         self._target_update_frequency = target_update_frequency
         self._replay_start_size = replay_start_size
         self._final_exploration_frame = final_exploration_frame
@@ -49,9 +52,10 @@ class DQNAgent(Agent):
         self._target_dqn = DQNRedKnight(n_actions=n_actions).to(self._device)
         self._target_dqn.load_state_dict(self._dqn.state_dict())
 
-        self._optimizer = Adam(
+        self._optimizer = RMSprop(
             params=self._dqn.parameters(),
-            lr=lr
+            lr=lr,
+            momentum=0.95
         )
 
         self._epsilon = 1
@@ -147,7 +151,7 @@ class DQNAgent(Agent):
             self._epsilon -= 0.9 / self._final_exploration_frame
 
     def _random_action(self):
-        return (torch.rand((1,)) < self._epsilon) or self._is_starting_step()
+        return (random() < self._epsilon) or self._is_starting_step()
 
     def _is_starting_step(self):
         return self._steps < self._replay_start_size
@@ -155,10 +159,10 @@ class DQNAgent(Agent):
     def _is_update_step(self):
         if self._steps < self._replay_start_size:
             return False
-        return True
+        return self._steps % self._update_frequency == 0
 
     def _is_target_update_step(self):
-        return self._learning_steps % self._target_update_frequency == 0
+        return self._learning_steps % (self._target_update_frequency * self._update_frequency) == 0
 
     def save(self, f):
         torch.save({
