@@ -11,6 +11,7 @@ from ..nn import DQNRedKnight
 
 
 class DQNAgent(Agent):
+    # TODO: add target clipping
 
     def __init__(
             self,
