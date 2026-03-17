@@ -15,27 +15,28 @@ class ReplayMemory:
         self._full = False
 
         # Experience buffers
-        self._s = torch.zeros(size=(N + 1,) + obs_shape)
+        self._s = torch.zeros(size=(N,) + obs_shape, dtype=torch.uint8)
         self._a = torch.zeros(size=(N,), dtype=torch.int)
-        self._r = torch.zeros(size=(N,))
+        self._r = torch.zeros(size=(N,), dtype=torch.float)
+        self._s_prime = torch.zeros(size=(N,) + obs_shape, dtype=torch.uint8)
         self._t = torch.zeros(size=(N,), dtype=torch.bool)
 
     def sample(self, n) -> tuple[Tensor, Tensor, Tensor, Tensor, Tensor]:
 
-        if n > self._N:
+        if not self._full and n > self._i:
             raise ValueError("Sample size can not be bigger than the buffer itself!")
 
         if self._empty():
             raise EmptyBufferError("Can not sample a buffer that does not contain any experiences!")
 
         size = self._N if self._full else self._i
-        sample_idx = torch.randint(size, size=(n,))
+        sample_idx = torch.randperm(size)[:n]
 
         return (
             self._s[sample_idx],
             self._a[sample_idx],
             self._r[sample_idx],
-            self._s[sample_idx + 1],  # We sample s_prime as the idx + 1, as this index contains the next state.
+            self._s_prime[sample_idx],
             self._t[sample_idx]
         )
 
@@ -45,13 +46,12 @@ class ReplayMemory:
         self._s[self._i] = s
         self._a[self._i] = a
         self._r[self._i] = r
-        self._s[self._i + 1] = s_prime
+        self._s_prime[self._i] = s_prime
         self._t[self._i] = t
 
         self._increment_i()
 
     def _increment_i(self) -> None:
-
 
         if self._i == self._N - 1:
             self._i = 0

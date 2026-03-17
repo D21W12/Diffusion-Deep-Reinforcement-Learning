@@ -3,7 +3,8 @@ from time import perf_counter
 
 class Timer:
 
-    def __init__(self):
+    def __init__(self, tag: str | None = None):
+        self._tag = tag
         self._start = None
         self._stop = None
 
@@ -18,4 +19,6 @@ class Timer:
         if print_result: self.print_result()
 
     def print_result(self):
+        if self._tag:
+            print(f"Result ({self._tag}): {self.result()}")
         print(f"Result: {self.result()}")

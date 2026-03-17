@@ -10,7 +10,6 @@ from ..nn import DQNRedKnight
 
 
 class DQNAgent(Agent):
-    # TODO: Remove being able to change train mode
 
     def __init__(
             self,
@@ -20,8 +19,7 @@ class DQNAgent(Agent):
             lr: float = 25e-4,
             replay_size: int = 1000000,
             discount: float = 0.99,
-            update_frequency: int = 4,
-            target_update_frequency: int = 4,
+            target_update_frequency: int = 10000,
             batch_size: int = 32,
             replay_start_size: int = 50000,
             final_exploration_frame: int = 1000000
@@ -36,18 +34,20 @@ class DQNAgent(Agent):
         self._obs_shape = obs_shape
 
         self._discount = discount
-        self._update_frequency = update_frequency
         self._target_update_frequency = target_update_frequency
         self._replay_start_size = replay_start_size
         self._final_exploration_frame = final_exploration_frame
         self._batch_size = batch_size
 
         self._dqn = DQNRedKnight(n_actions=n_actions).to(self._device)
-        self._target_dqn = DQNRedKnight(n_actions=n_actions).to(self._device)
         self._memory = ReplayMemory(
             N=replay_size,
             obs_shape=obs_shape
         ) if train else None
+
+        # Load same initial weights as dqn
+        self._target_dqn = DQNRedKnight(n_actions=n_actions).to(self._device)
+        self._target_dqn.load_state_dict(self._dqn.state_dict())
 
         self._optimizer = Adam(
             params=self._dqn.parameters(),
@@ -64,7 +64,7 @@ class DQNAgent(Agent):
         if self._random_action():
             return torch.randint(self._n_actions, (1,)).item()
 
-        s = s.to(self._device)
+        s = s.to(device=self._device, dtype=torch.float)
         with torch.no_grad():
             q_values = self._dqn(s.unsqueeze(0))
         return q_values.argmax().item()
@@ -123,13 +123,9 @@ class DQNAgent(Agent):
         # We detach the computational graph of the target, because
         # we do not need to compute gradients for the target network.
         with torch.no_grad():
-            nt = ~t
-            targets = torch.zeros((self._batch_size,), device=self._device)
-            targets[nt] = r[nt] + self._discount * self._target_dqn(s_prime[nt]).amax(dim=1)
-            targets[t] = r[t]
-            targets = targets.detach()
-
-        q_values = self._dqn(s)[:, a]
+            targets = r + (self._discount * self._target_dqn(s_prime).max(dim=1).values) * (~t)
+        q_values = self._dqn(s)
+        q_values = q_values.gather(dim=1, index=a.unsqueeze(1)).squeeze(1)
         return ((targets - q_values)**2).mean()
 
     def _update_target_dqn(self) -> None:
@@ -169,7 +165,7 @@ class DQNAgent(Agent):
             'epsilon': self._epsilon,
             'frames_seen': self._steps,
             'dqn_state_dict': self._dqn.state_dict(),
-            'target_dqn_state_dict': self._dqn.state_dict(),
+            'target_dqn_state_dict': self._target_dqn.state_dict(),
             'optimizer_state_dict': self._optimizer.state_dict()
         }, f)
 

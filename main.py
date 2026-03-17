@@ -14,8 +14,7 @@ if __name__ == "__main__":
 
     gym.register_envs(ale_py)
 
-    env = gym.make('ALE/Breakout-v5', render_mode='human' )
-    env = BaseWrapper(env, frame_stack_size=4)
+    env = BaseWrapper.create_environment('ALE/Breakout-v5', render_mode="human")
 
     agent = DQNAgent(
         train=False,

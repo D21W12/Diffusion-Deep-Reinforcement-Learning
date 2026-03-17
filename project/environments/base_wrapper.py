@@ -13,7 +13,6 @@ class BaseWrapper(gym.Wrapper):
     def __init__(
             self,
             env: gym.Env,
-            frame_stack_size: int = 4,
     ) -> None:
         """
         Constructor of BaseEnvWrapper
@@ -24,7 +23,6 @@ class BaseWrapper(gym.Wrapper):
 
         env = self._wrap_env(
             env=env,
-            frame_stack_size=frame_stack_size,
         )
         super().__init__(env)
 
@@ -43,21 +41,22 @@ class BaseWrapper(gym.Wrapper):
         return self._transform_observation(s), i
 
     def _transform_observation(self, s: np.ndarray) -> Tensor:
-        return torch.from_numpy(s).to(torch.float32)
+        return torch.from_numpy(s).to(torch.uint8)
 
     def _wrap_env(
             self,
             env: gym.Env,
-            frame_stack_size: int,
     ) -> gym.Env:
-
-        env = gym.wrappers.AtariPreprocessing(env)
-        env = gym.wrappers.FrameStackObservation(env, frame_stack_size)
+        env = gym.wrappers.MaxAndSkipObservation(env, skip=4)
+        env = gym.wrappers.ResizeObservation(env, shape=(84, 84))
+        env = gym.wrappers.GrayscaleObservation(env)
+        env = gym.wrappers.FrameStackObservation(env, stack_size=4)
+        env = gym.wrappers.ClipReward(env, min_reward=-1, max_reward=1)
 
         return env
 
-    @staticmethod
-    def create_environment(id, frame_stack_size: int = 4):
-        env = gym.make(id, frameskip=1)
-        env = BaseWrapper(env, frame_stack_size=frame_stack_size)
+    @classmethod
+    def create_environment(cls, id, render_mode: str | None = None):
+        env = gym.make(id, render_mode=render_mode, frameskip=1)
+        env = cls(env)
         return env

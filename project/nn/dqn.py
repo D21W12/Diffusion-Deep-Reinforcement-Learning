@@ -39,6 +39,7 @@ class DQNRedKnight(nn.Module):
         )
 
     def forward(self, X):
+        X = X.to(torch.float) / 255.0
         return self._network(X)
 
 
@@ -79,6 +80,7 @@ class DQNMilkyWay(nn.Module):
         )
 
     def forward(self, X) -> torch.Tensor:
+        X = X.to(torch.float) / 255.0
         return self._network(X)
 
 
