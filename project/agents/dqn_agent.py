@@ -3,7 +3,7 @@ from typing import override
 import torch
 from torch.nn import SmoothL1Loss
 
-from torch.optim import RMSprop
+from torch.optim import Adam
 
 from .base_agent import Agent
 from .experience_replay import ReplayMemory
@@ -52,10 +52,9 @@ class DQNAgent(Agent):
         self._target_dqn = DQNRedKnight(n_actions=n_actions).to(self._device)
         self._target_dqn.load_state_dict(self._dqn.state_dict())
 
-        self._optimizer = RMSprop(
+        self._optimizer = Adam(
             params=self._dqn.parameters(),
             lr=lr,
-            momentum=0.95
         )
         self._criterion = SmoothL1Loss() # Adds gradient clipping
 
@@ -102,12 +101,16 @@ class DQNAgent(Agent):
         if self._is_update_step():
             self._update_network()
 
-        if self._is_target_update_step():
-            self._update_target_dqn()
+            if self._is_target_update_step():
+                self._update_target_dqn()
 
     @property
     def _learning_steps(self):
         return self._steps - self._replay_start_size
+
+    @property
+    def _updates(self):
+        return self._steps // self._update_frequency
 
     def _update_network(self):
 
@@ -167,7 +170,7 @@ class DQNAgent(Agent):
         return self._steps % self._update_frequency == 0
 
     def _is_target_update_step(self):
-        return self._learning_steps % (self._target_update_frequency * self._update_frequency) == 0
+        return self._updates % self._target_update_frequency == 0
 
     def save(self, f):
         torch.save({
