@@ -70,11 +70,11 @@ class ReplayMemory:
 
     def _init_memory(self) -> None:
 
-        self._s = torch.zeros(size=(N,) + self._obs_shape, dtype=torch.uint8)
-        self._a = torch.zeros(size=(N,), dtype=torch.int)
-        self._r = torch.zeros(size=(N,), dtype=torch.float)
-        self._s_prime = torch.zeros(size=(N,) + self._obs_shape, dtype=torch.uint8)
-        self._t = torch.zeros(size=(N,), dtype=torch.bool)
+        self._s = torch.zeros(size=(self._N,) + self._obs_shape, dtype=torch.uint8)
+        self._a = torch.zeros(size=(self._N,), dtype=torch.int)
+        self._r = torch.zeros(size=(self._N,), dtype=torch.float)
+        self._s_prime = torch.zeros(size=(self._N,) + self._obs_shape, dtype=torch.uint8)
+        self._t = torch.zeros(size=(self._N,), dtype=torch.bool)
 
         self._memory_is_init = True
 
