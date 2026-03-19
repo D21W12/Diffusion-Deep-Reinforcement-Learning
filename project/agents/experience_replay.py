@@ -4,7 +4,6 @@ from torch import Tensor
 
 
 class ReplayMemory:
-    # TODO: Fix sampling to be without replacement.
 
     def __init__(self, N: int, obs_shape: tuple):
 
