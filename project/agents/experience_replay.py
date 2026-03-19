@@ -10,16 +10,19 @@ class ReplayMemory:
 
         super().__init__()
 
+        self._obs_shape = obs_shape
+        self._memory_is_init = False
+
         self._N = N
         self._i = 0  # Pointer to the last saved experience
         self._full = False
 
         # Experience buffers
-        self._s = torch.zeros(size=(N,) + obs_shape, dtype=torch.uint8)
-        self._a = torch.zeros(size=(N,), dtype=torch.int)
-        self._r = torch.zeros(size=(N,), dtype=torch.float)
-        self._s_prime = torch.zeros(size=(N,) + obs_shape, dtype=torch.uint8)
-        self._t = torch.zeros(size=(N,), dtype=torch.bool)
+        self._s = None
+        self._a = None
+        self._r = None
+        self._s_prime = None
+        self._t = None
 
     def sample(self, n) -> tuple[Tensor, Tensor, Tensor, Tensor, Tensor]:
 
@@ -42,6 +45,9 @@ class ReplayMemory:
 
     def add(self, s, a, r, s_prime, t) -> None:
 
+        if not self._memory_is_init:
+            self._init_memory()
+
         # Save Experience
         self._s[self._i] = s
         self._a[self._i] = a
@@ -62,7 +68,21 @@ class ReplayMemory:
     def _empty(self) -> bool:
         return not self._full and self._i == 0
 
+    def _init_memory(self) -> None:
+
+        self._s = torch.zeros(size=(N,) + self._obs_shape, dtype=torch.uint8)
+        self._a = torch.zeros(size=(N,), dtype=torch.int)
+        self._r = torch.zeros(size=(N,), dtype=torch.float)
+        self._s_prime = torch.zeros(size=(N,) + self._obs_shape, dtype=torch.uint8)
+        self._t = torch.zeros(size=(N,), dtype=torch.bool)
+
+        self._memory_is_init = True
+
     def state_dict(self) -> dict:
+
+        if not self._memory_is_init:
+            raise EmptyBufferError("Can't save uninitialized memory!")
+
         return {
             "N": self._N,
             "i": self._i,
@@ -75,6 +95,7 @@ class ReplayMemory:
         }
 
     def load_state_dict(self, state_dict: dict) -> None:
+
         self._N = state_dict["N"]
         self._i= state_dict["i"]
         self._full = state_dict["full"]
@@ -83,6 +104,8 @@ class ReplayMemory:
         self._r = state_dict["r"]
         self._s_prime = state_dict["s_prime"]
         self._t = state_dict["t"]
+
+        self._memory_is_init = True
 
 
 class EmptyBufferError(Exception):
