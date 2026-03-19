@@ -59,8 +59,30 @@ class ReplayMemory:
             return
         self._i += 1
 
-    def _empty(self):
+    def _empty(self) -> bool:
         return not self._full and self._i == 0
+
+    def state_dict(self) -> dict:
+        return {
+            "N": self._N,
+            "i": self._i,
+            "full": self._full,
+            "s": self._s,
+            "a": self._a,
+            "r": self._r,
+            "s_prime": self._s_prime,
+            "t": self._t
+        }
+
+    def load_state_dict(self, state_dict: dict) -> None:
+        self._N = state_dict["N"]
+        self._i= state_dict["i"]
+        self._full = state_dict["full"]
+        self._s = state_dict["s"]
+        self._a = state_dict["a"]
+        self._r = state_dict["r"]
+        self._s_prime = state_dict["s_prime"]
+        self._t = state_dict["t"]
 
 
 class EmptyBufferError(Exception):

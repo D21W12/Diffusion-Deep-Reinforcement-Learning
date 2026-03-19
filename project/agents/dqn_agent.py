@@ -1,7 +1,7 @@
-from random import random
 from typing import override
 
 import torch
+from torch.nn import SmoothL1Loss
 
 from torch.optim import RMSprop
 
@@ -11,7 +11,6 @@ from ..nn import DQNRedKnight
 
 
 class DQNAgent(Agent):
-    # TODO: add target clipping
 
     def __init__(
             self,
@@ -58,6 +57,7 @@ class DQNAgent(Agent):
             lr=lr,
             momentum=0.95
         )
+        self._criterion = SmoothL1Loss() # Adds gradient clipping
 
         self._epsilon = 1
         self._steps = 0
@@ -81,6 +81,7 @@ class DQNAgent(Agent):
             raise Exception("Agent must be set to train mode before being able to observe experiences.")
 
         self._steps += 1
+
         self._memory.add(
             s=s,
             a=a,
@@ -88,6 +89,7 @@ class DQNAgent(Agent):
             s_prime=s_prime,
             t=t
         )
+
         self._update_epsilon()
 
     @override
@@ -99,6 +101,9 @@ class DQNAgent(Agent):
 
         if self._is_update_step():
             self._update_network()
+
+        if self._is_target_update_step():
+            self._update_target_dqn()
 
     @property
     def _learning_steps(self):
@@ -120,9 +125,6 @@ class DQNAgent(Agent):
         loss.backward()  # Computing gradients
         self._optimizer.step()
 
-        if self._is_target_update_step():
-            self._update_target_dqn()
-
     def _loss(self, s, a, r, s_prime, t) -> torch.Tensor:
 
         # We detach the computational graph of the target, because
@@ -131,7 +133,7 @@ class DQNAgent(Agent):
             targets = r + (self._discount * self._target_dqn(s_prime).max(dim=1).values) * (~t)
         q_values = self._dqn(s)
         q_values = q_values.gather(dim=1, index=a.unsqueeze(1)).squeeze(1)
-        return ((targets - q_values)**2).mean()
+        return self._criterion(targets, q_values)
 
     def _update_target_dqn(self) -> None:
         """
@@ -152,7 +154,9 @@ class DQNAgent(Agent):
             self._epsilon -= 0.9 / self._final_exploration_frame
 
     def _random_action(self):
-        return (random() < self._epsilon) or self._is_starting_step()
+        if self._train:
+            return (torch.rand((1,)) < self._epsilon) or self._is_starting_step()
+        return (torch.rand((1,)) < 0.05)
 
     def _is_starting_step(self):
         return self._steps < self._replay_start_size
@@ -168,20 +172,25 @@ class DQNAgent(Agent):
     def save(self, f):
         torch.save({
             'epsilon': self._epsilon,
-            'frames_seen': self._steps,
+            'steps': self._steps,
             'dqn_state_dict': self._dqn.state_dict(),
             'target_dqn_state_dict': self._target_dqn.state_dict(),
-            'optimizer_state_dict': self._optimizer.state_dict()
+            'optimizer_state_dict': self._optimizer.state_dict(),
+            'memory_state_dict': self._memory.state_dict()
         }, f)
 
     def load(self, f):
         data = torch.load(f, weights_only=True)
 
         self._epsilon = data['epsilon']
-        self._steps = data['frames_seen']
+        self._steps = data['steps']
 
         self._dqn.load_state_dict(data['dqn_state_dict'])
         self._target_dqn.load_state_dict(data['target_dqn_state_dict'])
+
+        # Only load memory if in training mode
+        if self._train:
+            self._memory.load_state_dict(data['memory_state_dict'])
 
     def to(self, device: str) -> 'DQNAgent':
         OPTIONS = ["cuda", "mps", "cpu"]
