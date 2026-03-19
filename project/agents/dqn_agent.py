@@ -180,7 +180,7 @@ class DQNAgent(Agent):
         }, f)
 
     def load(self, f):
-        data = torch.load(f, weights_only=True)
+        data = torch.load(f, weights_only=False)
 
         self._epsilon = data['epsilon']
         self._steps = data['steps']
