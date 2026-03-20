@@ -101,12 +101,16 @@ class DQNAgent(Agent):
         if self._is_update_step():
             self._update_network()
 
-        if self._is_target_update_step():
-            self._update_target_dqn()
+            if self._is_target_update_step():
+                self._update_target_dqn()
 
     @property
     def _learning_steps(self):
         return self._steps - self._replay_start_size
+
+    @property
+    def _updates(self):
+        return self._steps // self._update_frequency
 
     def _update_network(self):
 
@@ -168,7 +172,7 @@ class DQNAgent(Agent):
         return self._steps % self._update_frequency == 0
 
     def _is_target_update_step(self):
-        return self._learning_steps % (self._target_update_frequency * self._update_frequency) == 0
+        return self._updates % self._target_update_frequency == 0
 
     def save(self, f):
         torch.save({
