@@ -27,8 +27,9 @@ if __name__ == "__main__":
     agent = DDQNAgent(
         train=False,
         n_actions=env.action_space.n,
-        obs_shape=env.observation_space.shape
-    ).to(device)
+        obs_shape=env.observation_space.shape,
+        device=device,
+    )
     if os.path.exists(PATH_CHECKPOINT):
         print("Loading existing checkpoint...")
         agent.load(PATH_CHECKPOINT)

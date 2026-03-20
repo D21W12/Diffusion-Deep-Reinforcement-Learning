@@ -49,8 +49,6 @@ class BaseWrapper(gym.Wrapper):
     ) -> gym.Env:
         env = gym.wrappers.AtariPreprocessing(env)
         env = gym.wrappers.FrameStackObservation(env, stack_size=4)
-        env = gym.wrappers.ClipReward(env, min_reward=-1, max_reward=1)
-
         return env
 
     @classmethod

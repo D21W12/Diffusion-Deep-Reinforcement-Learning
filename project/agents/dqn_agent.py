@@ -3,7 +3,7 @@ from typing import override
 import torch
 
 from torch.nn import SmoothL1Loss
-from torch.optim import Adam
+from torch.optim import Adam, RMSprop
 
 from .base_agent import Agent
 from .experience_replay import ReplayMemory
@@ -24,13 +24,14 @@ class DQNAgent(Agent):
             target_update_frequency: int = 10000,
             batch_size: int = 32,
             replay_start_size: int = 50000,
-            final_exploration_frame: int = 1000000
+            final_exploration_frame: int = 1000000,
+            device: str = "cpu"
     ) -> None:
         """Constructor of the DQNAgent class."""
 
         super().__init__(n_actions)
 
-        self._device = "cpu"
+        self._device = device
 
         self._train = train
         self._obs_shape = obs_shape
@@ -52,9 +53,11 @@ class DQNAgent(Agent):
         self._target_dqn = DQNRedKnight(n_actions=n_actions).to(self._device)
         self._target_dqn.load_state_dict(self._dqn.state_dict())
 
-        self._optimizer = Adam(
+        self._optimizer = RMSprop(
             params=self._dqn.parameters(),
             lr=lr,
+            momentum=0.95,
+            eps=0.01,
         )
         self._criterion = SmoothL1Loss()
 
@@ -63,7 +66,6 @@ class DQNAgent(Agent):
 
     @override
     def select_action(self, s) -> int:
-        print(s.shape)
 
         # With chance e select a random action (during training)
         if self._random_action():
@@ -124,8 +126,9 @@ class DQNAgent(Agent):
         s_prime = s_prime.to(self._device)
         t = t.to(self._device)
 
-        self._optimizer.zero_grad()
+
         loss = self._loss(s, a, r, s_prime, t)
+        self._optimizer.zero_grad()
         loss.backward()  # Computing gradients
         self._optimizer.step()
 
@@ -137,7 +140,7 @@ class DQNAgent(Agent):
             targets = r + (self._discount * self._target_dqn(s_prime).max(dim=1).values) * (~t)
         q_values = self._dqn(s)
         q_values = q_values.gather(dim=1, index=a.unsqueeze(1)).squeeze(1)
-        return self._criterion(targets, q_values)
+        return self._criterion(q_values, targets)
 
     def _update_target_dqn(self) -> None:
         """
@@ -174,7 +177,8 @@ class DQNAgent(Agent):
         return (self._steps - 1) % self._update_frequency == 0
 
     def _is_target_update_step(self):
-        return self._updates % self._target_update_frequency == 0
+        # TODO: faster than according to the paper but let's try
+        return self._steps % self._target_update_frequency == 0
 
     def save(self, f):
         torch.save({
@@ -202,7 +206,8 @@ class DQNAgent(Agent):
             raise Exception("Agent must be set to train mode before being able to observe experiences.")
         self._memory.load(f)
 
-    def to(self, device: str) -> 'DQNAgent':
+    @staticmethod
+    def _check_device(self, device: str) -> 'DQNAgent':
         OPTIONS = ["cuda", "mps", "cpu"]
 
         # Check if a correct/available device is given.
@@ -212,10 +217,3 @@ class DQNAgent(Agent):
             raise ValueError(f"Cuda not available!")
         elif device == "mps" and not torch.mps.is_available():
             raise ValueError(f"MPS not available!")
-
-        self._device = device
-
-        self._dqn.to(device)
-        self._target_dqn.to(device)
-
-        return self

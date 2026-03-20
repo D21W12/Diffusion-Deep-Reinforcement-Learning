@@ -5,7 +5,7 @@ import ale_py
 import gymnasium as gym
 
 from project.environments import BaseWrapper
-from project.agents import DDQNAgent
+from project.agents import DQNAgent
 from project.environments.loops import TrainingLoop
 
 PATH_CHECKPOINT = os.path.join("parameters", "model-20032026.pth")
@@ -33,7 +33,7 @@ if __name__ == "__main__":
 
     env = BaseWrapper.create_environment(ENVIRONMENT)
 
-    agent = DDQNAgent(
+    agent = DQNAgent(
         train=True,
         lr=LR,
         discount=DISCOUNT,
@@ -43,8 +43,9 @@ if __name__ == "__main__":
         batch_size=BATCH_SIZE,
         final_exploration_frame=FINAL_EXPLORATION_FRAME,
         replay_start_size=REPLAY_START_SIZE,
-        obs_shape=env.observation_space.shape
-    ).to(device)
+        obs_shape=env.observation_space.shape,
+        device=device
+    )
     if os.path.exists(PATH_CHECKPOINT):
         print("Loading existing checkpoint...")
         agent.load(PATH_CHECKPOINT)
