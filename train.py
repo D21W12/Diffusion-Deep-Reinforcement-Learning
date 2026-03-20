@@ -12,7 +12,7 @@ PATH_CHECKPOINT = os.path.join("parameters", "model-20032026.pth")
 PATH_MEMORY = os.path.join("parameters", "memory-20032026.pth")
 
 FRAMES = 1_000_000
-LR = 25e-4
+LR = 2.5e-4
 DISCOUNT = 0.99
 REPLAY_SIZE = 500_000
 ENVIRONMENT = "ALE/Pong-v5"

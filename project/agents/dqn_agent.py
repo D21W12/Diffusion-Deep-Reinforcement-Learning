@@ -17,7 +17,7 @@ class DQNAgent(Agent):
             n_actions: int,
             obs_shape: tuple,
             train: bool,
-            lr: float = 25e-4,
+            lr: float = 2.5e-4,
             replay_size: int = 1000000,
             discount: float = 0.99,
             update_frequency: int = 4,
