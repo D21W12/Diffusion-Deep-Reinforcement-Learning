@@ -5,17 +5,16 @@ import ale_py
 import gymnasium as gym
 
 from project.environments import BaseWrapper
-from project.agents import DQNAgent
+from project.agents import DDQNAgent
 from project.environments.loops import TrainingLoop
 
-PATH_CHECKPOINT = os.path.join("parameters", "chk_test.pth")
-PATH_MEMORY = os.path.join("parameters", "memory_test.pth")
+PATH_CHECKPOINT = os.path.join("parameters", "model-20032026.pth")
+PATH_MEMORY = os.path.join("parameters", "memory-20032026.pth")
 
-FRAMES = 1_000
+FRAMES = 1_000_000
 LR = 25e-4
 DISCOUNT = 0.99
-REPLAY_SIZE = 1_000_000
-N_ACTIONS = 4
+REPLAY_SIZE = 500_000
 ENVIRONMENT = "ALE/Pong-v5"
 TARGET_UPDATE_FREQUENCY = 10_000
 BATCH_SIZE = 32
@@ -34,12 +33,12 @@ if __name__ == "__main__":
 
     env = BaseWrapper.create_environment(ENVIRONMENT)
 
-    agent = DQNAgent(
+    agent = DDQNAgent(
         train=True,
         lr=LR,
         discount=DISCOUNT,
         replay_size=REPLAY_SIZE,
-        n_actions=N_ACTIONS,
+        n_actions=env.action_space.n,
         target_update_frequency=TARGET_UPDATE_FREQUENCY,
         batch_size=BATCH_SIZE,
         final_exploration_frame=FINAL_EXPLORATION_FRAME,

@@ -143,6 +143,7 @@ class DQNAgent(Agent):
         Method for updating the target network, with the parameters
         of the non-target network.
         """
+        print("Updating target!")
         self._target_dqn.load_state_dict(self._dqn.state_dict())
 
     def _update_epsilon(self) -> None:
@@ -156,7 +157,7 @@ class DQNAgent(Agent):
         if self._steps < self._final_exploration_frame:
             self._epsilon -= 0.9 / self._final_exploration_frame
         else:
-            self._epsilon = 1
+            self._epsilon = 0.1
 
     def _random_action(self):
         if self._train:
