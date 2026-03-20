@@ -63,6 +63,7 @@ class DQNAgent(Agent):
 
     @override
     def select_action(self, s) -> int:
+        print(s.shape)
 
         # With chance e select a random action (during training)
         if self._random_action():
@@ -71,7 +72,6 @@ class DQNAgent(Agent):
         s = s.to(device=self._device, dtype=torch.float)
         with torch.no_grad():
             q_values = self._dqn(s.unsqueeze(0))
-        print(q_values)
         return q_values.argmax().item()
 
     @override
@@ -111,7 +111,7 @@ class DQNAgent(Agent):
 
     @property
     def _updates(self):
-        return self._steps // self._update_frequency
+        return (self._steps - 1) // self._update_frequency
 
     def _update_network(self):
 
@@ -171,7 +171,7 @@ class DQNAgent(Agent):
     def _is_update_step(self):
         if self._steps < self._replay_start_size:
             return False
-        return self._steps % self._update_frequency == 0
+        return (self._steps - 1) % self._update_frequency == 0
 
     def _is_target_update_step(self):
         return self._updates % self._target_update_frequency == 0

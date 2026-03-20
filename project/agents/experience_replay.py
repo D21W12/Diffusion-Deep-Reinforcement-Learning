@@ -120,7 +120,7 @@ class EmptyBufferError(Exception):
 if __name__ == "__main__":
 
     memory = ReplayMemory(
-        N=100,
+        N=5,
         obs_shape=(1,)
     )
 
@@ -129,6 +129,8 @@ if __name__ == "__main__":
         s_prime = torch.randint(255, (1,))
         r = torch.randint(10, (1,))
         a = torch.randint(6, (1,))
-        memory.add(s, a, r, s_prime)
+        t = i % 2 == 0
+        memory.add(s, a, r, s_prime, t)
+        s = s_prime
 
     print(memory.sample(2))

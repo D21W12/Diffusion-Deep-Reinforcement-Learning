@@ -19,16 +19,16 @@ class TrainingLoop(Loop):
 
         terminated = True
 
-        elapsed_episodes = 0
-        elapsed_episode_frames = 0
+        # elapsed_episodes = 0
+        # elapsed_episode_frames = 0
 
         for _ in tqdm(range(frames), desc="Frames: "):
 
             if terminated:
                 s, info = self._env.reset()
-                tqdm.write(f"Episode {elapsed_episodes} complete ({elapsed_episode_frames} frames)")
-                elapsed_episodes += 1
-                elapsed_episode_frames = 0
+                # tqdm.write(f"Episode {elapsed_episodes} complete ({elapsed_episode_frames} frames)")
+                # elapsed_episodes += 1
+                # elapsed_episode_frames = 0
 
             a = self._agent.select_action(s=s)
             s_prime, reward, terminated, truncated, info = self._env.step(a)
@@ -38,4 +38,4 @@ class TrainingLoop(Loop):
 
             s = s_prime
 
-            elapsed_episode_frames += 1
+            # elapsed_episode_frames += 1
