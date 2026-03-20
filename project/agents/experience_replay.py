@@ -106,6 +106,12 @@ class ReplayMemory:
 
         self._memory_is_init = True
 
+    def save(self, f):
+        torch.save(self.state_dict(), f)
+
+    def load(self, f):
+        self.load_state_dict(torch.load(f))
+
 
 class EmptyBufferError(Exception):
     pass

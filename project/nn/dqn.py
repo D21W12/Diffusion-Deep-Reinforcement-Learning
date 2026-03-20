@@ -39,7 +39,7 @@ class DQNRedKnight(nn.Module):
         )
 
     def forward(self, X):
-        X = X.to(torch.float) / 255.0
+        X = X / 255.0
         return self._network(X)
 
 

@@ -1,9 +1,9 @@
 from typing import override
 
 import torch
-from torch.nn import SmoothL1Loss
 
-from torch.optim import RMSprop
+from torch.nn import SmoothL1Loss
+from torch.optim import Adam
 
 from .base_agent import Agent
 from .experience_replay import ReplayMemory
@@ -52,12 +52,11 @@ class DQNAgent(Agent):
         self._target_dqn = DQNRedKnight(n_actions=n_actions).to(self._device)
         self._target_dqn.load_state_dict(self._dqn.state_dict())
 
-        self._optimizer = RMSprop(
+        self._optimizer = Adam(
             params=self._dqn.parameters(),
             lr=lr,
-            momentum=0.95
         )
-        self._criterion = SmoothL1Loss() # Adds gradient clipping
+        self._criterion = SmoothL1Loss()
 
         self._epsilon = 1
         self._steps = 0
@@ -152,6 +151,8 @@ class DQNAgent(Agent):
         """
         if self._steps < self._final_exploration_frame:
             self._epsilon -= 0.9 / self._final_exploration_frame
+        else:
+            self._epsilon = 1
 
     def _random_action(self):
         if self._train:
@@ -176,11 +177,13 @@ class DQNAgent(Agent):
             'dqn_state_dict': self._dqn.state_dict(),
             'target_dqn_state_dict': self._target_dqn.state_dict(),
             'optimizer_state_dict': self._optimizer.state_dict(),
-            'memory_state_dict': self._memory.state_dict()
         }, f)
 
+    def save_memory(self, f):
+        self._memory.save(f)
+
     def load(self, f):
-        data = torch.load(f, weights_only=False)
+        data = torch.load(f)
 
         self._epsilon = data['epsilon']
         self._steps = data['steps']
@@ -188,9 +191,10 @@ class DQNAgent(Agent):
         self._dqn.load_state_dict(data['dqn_state_dict'])
         self._target_dqn.load_state_dict(data['target_dqn_state_dict'])
 
-        # Only load memory if in training mode
-        if self._train:
-            self._memory.load_state_dict(data['memory_state_dict'])
+    def load_memory(self, f):
+        if not self._train:
+            raise Exception("Agent must be set to train mode before being able to observe experiences.")
+        self._memory.load(f)
 
     def to(self, device: str) -> 'DQNAgent':
         OPTIONS = ["cuda", "mps", "cpu"]

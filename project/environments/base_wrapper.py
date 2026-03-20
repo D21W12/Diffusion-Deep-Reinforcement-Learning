@@ -47,9 +47,7 @@ class BaseWrapper(gym.Wrapper):
             self,
             env: gym.Env,
     ) -> gym.Env:
-        env = gym.wrappers.MaxAndSkipObservation(env, skip=4)
-        env = gym.wrappers.ResizeObservation(env, shape=(84, 84))
-        env = gym.wrappers.GrayscaleObservation(env)
+        env = gym.wrappers.AtariPreprocessing(env)
         env = gym.wrappers.FrameStackObservation(env, stack_size=4)
         env = gym.wrappers.ClipReward(env, min_reward=-1, max_reward=1)
 
