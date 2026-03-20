@@ -71,6 +71,7 @@ class DQNAgent(Agent):
         s = s.to(device=self._device, dtype=torch.float)
         with torch.no_grad():
             q_values = self._dqn(s.unsqueeze(0))
+        print(q_values)
         return q_values.argmax().item()
 
     @override
@@ -188,7 +189,7 @@ class DQNAgent(Agent):
         self._memory.save(f)
 
     def load(self, f):
-        data = torch.load(f)
+        data = torch.load(f, weights_only=False)
 
         self._epsilon = data['epsilon']
         self._steps = data['steps']

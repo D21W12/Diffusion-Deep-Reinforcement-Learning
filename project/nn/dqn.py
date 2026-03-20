@@ -32,11 +32,13 @@ class DQNRedKnight(nn.Module):
                 stride=1,
                 bias=True
             ), nn.ReLU(), nn.Flatten(),
-            nn.LazyLinear(
+            nn.Linear(
+                in_features=3136,
                 out_features=512,
                 bias=True
             ), nn.ReLU(),
-            nn.LazyLinear(
+            nn.Linear(
+                in_features=512,
                 out_features=n_actions
             ),
         )
