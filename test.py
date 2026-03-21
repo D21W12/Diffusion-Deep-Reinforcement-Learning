@@ -8,8 +8,8 @@ from project.agents import DDQNAgent
 from project.environments import BaseWrapper
 from project.environments.loops import TestingLoop
 
-PATH_CHECKPOINT = os.path.join("parameters", "model-20032026.pth")
-ENVIRONMENT = "ALE/Pong-v5"
+PATH_CHECKPOINT = os.path.join("parameters", "model-20042026.pth")
+ENVIRONMENT = "ALE/Breakout-v5"
 
 
 if __name__ == "__main__":

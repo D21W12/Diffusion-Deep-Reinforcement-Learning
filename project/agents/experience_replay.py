@@ -35,10 +35,10 @@ class ReplayMemory:
         sample_idx = torch.randint(0, size, size=(n,))
 
         return (
-            self._s[sample_idx],
+            (self._s[sample_idx] / 255).detach(),
             self._a[sample_idx],
             self._r[sample_idx],
-            self._s_prime[sample_idx],
+            (self._s_prime[sample_idx] / 255).detach(),
             self._t[sample_idx]
         )
 
