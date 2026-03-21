@@ -4,7 +4,7 @@ from typing import override
 import torch
 
 from torch.nn import SmoothL1Loss
-from torch.optim import Adam, RMSprop, AdamW
+from torch.optim import AdamW
 
 from .base_agent import Agent
 from .experience_replay import ReplayMemory
@@ -76,7 +76,7 @@ class DQNAgent(Agent):
         if self._random_action():
             return torch.randint(self._n_actions, (1,)).item()
 
-        s = s.to(device=self._device, dtype=torch.float)
+        s = s.to(device=self._device, dtype=torch.float) / 255
         with torch.no_grad():
             q_values = self._dqn(s.unsqueeze(0))
         return q_values.argmax().item()

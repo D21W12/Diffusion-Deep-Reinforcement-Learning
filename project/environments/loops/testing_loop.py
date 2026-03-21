@@ -17,5 +17,10 @@ class TestingLoop(Loop):
         s, info = self._env.reset()
         while True:
             a = self._agent.select_action(s=s)
-            s_prime, r, e, _, _ = self._env.step(a)
-            s = s_prime
+            s_prime, r, terminated, truncated, _ = self._env.step(a)
+            done = terminated or truncated
+
+            if done:
+                s, info = self._env.reset()
+            else:
+                s = s_prime
