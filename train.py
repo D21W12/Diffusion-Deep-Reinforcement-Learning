@@ -5,11 +5,11 @@ import ale_py
 import gymnasium as gym
 
 from project.environments import BaseWrapper
-from project.agents import DQNAgent
+from project.agents import DQNAgent, DDQNAgent
 from project.environments.loops import TrainingLoop
 
-PATH_CHECKPOINT = os.path.join("parameters", "model-20042026.pth")
-PATH_MEMORY = os.path.join("parameters", "memory-20042026.pth")
+PATH_CHECKPOINT = os.path.join("parameters", "model-24032026rms.pth")
+PATH_MEMORY = os.path.join("parameters", "memory-24032026rms.pth")
 
 FRAMES = 500_000
 LR = 2.5e-4
@@ -43,7 +43,6 @@ if __name__ == "__main__":
         batch_size=BATCH_SIZE,
         final_exploration_frame=FINAL_EXPLORATION_FRAME,
         replay_start_size=REPLAY_START_SIZE,
-        obs_shape=env.observation_space.shape,
         device=device
     )
     if os.path.exists(PATH_CHECKPOINT):

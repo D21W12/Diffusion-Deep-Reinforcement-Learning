@@ -4,7 +4,7 @@ from typing import override
 import torch
 
 from torch.nn import SmoothL1Loss
-from torch.optim import AdamW
+from torch.optim import Adam, AdamW, RMSprop
 
 from .base_agent import Agent
 from .experience_replay import ReplayMemory
@@ -16,7 +16,6 @@ class DQNAgent(Agent):
     def __init__(
             self,
             n_actions: int,
-            obs_shape: tuple,
             train: bool,
             lr: float = 2.5e-4,
             replay_size: int = 1000000,
@@ -35,7 +34,6 @@ class DQNAgent(Agent):
         self._device = device
 
         self._train = train
-        self._obs_shape = obs_shape
 
         self._discount = discount
         self._update_frequency = update_frequency
@@ -47,7 +45,6 @@ class DQNAgent(Agent):
         self._dqn = DQNRedKnight(n_actions=n_actions).to(self._device)
         self._memory = ReplayMemory(
             N=replay_size,
-            obs_shape=obs_shape
         ) if train else None
 
         # Load same initial weights as dqn
@@ -62,7 +59,7 @@ class DQNAgent(Agent):
         # )
         self._optimizer = AdamW(
             params=self._dqn.parameters(),
-            lr=lr
+            lr=lr,
         )
         self._criterion = SmoothL1Loss()
 
@@ -76,7 +73,7 @@ class DQNAgent(Agent):
         if self._random_action():
             return torch.randint(self._n_actions, (1,)).item()
 
-        s = s.to(device=self._device, dtype=torch.float) / 255
+        s = s.to(device=self._device)
         with torch.no_grad():
             q_values = self._dqn(s.unsqueeze(0))
         return q_values.argmax().item()

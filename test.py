@@ -4,11 +4,11 @@ import torch
 import ale_py
 import gymnasium as gym
 
-from project.agents import DDQNAgent
+from project.agents import DDQNAgent, DQNAgent
 from project.environments import BaseWrapper
 from project.environments.loops import TestingLoop
 
-PATH_CHECKPOINT = os.path.join("parameters", "model-20042026.pth")
+PATH_CHECKPOINT = os.path.join("parameters", "model-22032026.pth")
 ENVIRONMENT = "ALE/Breakout-v5"
 
 
@@ -24,10 +24,9 @@ if __name__ == "__main__":
         device = "cuda"
     print(f"Using: {device}")
 
-    agent = DDQNAgent(
+    agent = DQNAgent(
         train=False,
         n_actions=env.action_space.n,
-        obs_shape=env.observation_space.shape,
         device=device,
     )
     if os.path.exists(PATH_CHECKPOINT):

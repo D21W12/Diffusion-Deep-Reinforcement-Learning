@@ -5,11 +5,11 @@ from torch import Tensor
 
 class ReplayMemory:
 
-    def __init__(self, N: int, obs_shape: tuple):
+    def __init__(self, N: int):
 
         super().__init__()
 
-        self._obs_shape = obs_shape
+        self._obs_shape = None
         self._memory_is_init = False
 
         self._N = N
@@ -35,17 +35,17 @@ class ReplayMemory:
         sample_idx = torch.randint(0, size, size=(n,))
 
         return (
-            (self._s[sample_idx] / 255).detach(),
+            self._s[sample_idx],
             self._a[sample_idx],
             self._r[sample_idx],
-            (self._s_prime[sample_idx] / 255).detach(),
+            self._s_prime[sample_idx],
             self._t[sample_idx]
         )
 
     def add(self, s, a, r, s_prime, t) -> None:
 
         if not self._memory_is_init:
-            self._init_memory()
+            self._init_memory(obs_shape=s.shape)
 
         # Save Experience
         self._s[self._i] = s
@@ -67,13 +67,18 @@ class ReplayMemory:
     def _empty(self) -> bool:
         return not self._full and self._i == 0
 
-    def _init_memory(self) -> None:
+    def _init_memory(self, obs_shape: tuple | None = None, empty: bool = True) -> None:
 
-        self._s = torch.zeros(size=(self._N,) + self._obs_shape, dtype=torch.uint8)
-        self._a = torch.zeros(size=(self._N,), dtype=torch.int)
-        self._r = torch.zeros(size=(self._N,), dtype=torch.float)
-        self._s_prime = torch.zeros(size=(self._N,) + self._obs_shape, dtype=torch.uint8)
-        self._t = torch.zeros(size=(self._N,), dtype=torch.bool)
+        if empty:
+
+            if obs_shape is None:
+                raise ValueError("Observation shape needs to be specified when initializing an empty buffer!")
+
+            self._s = torch.zeros(size=(self._N,) + obs_shape, dtype=torch.uint8)
+            self._a = torch.zeros(size=(self._N,), dtype=torch.int)
+            self._r = torch.zeros(size=(self._N,), dtype=torch.float)
+            self._s_prime = torch.zeros(size=(self._N,) + obs_shape, dtype=torch.uint8)
+            self._t = torch.zeros(size=(self._N,), dtype=torch.bool)
 
         self._memory_is_init = True
 
@@ -104,7 +109,7 @@ class ReplayMemory:
         self._s_prime = state_dict["s_prime"]
         self._t = state_dict["t"]
 
-        self._memory_is_init = True
+        self._init_memory(empty=False)
 
     def save(self, f):
         torch.save(self.state_dict(), f)
@@ -121,7 +126,6 @@ if __name__ == "__main__":
 
     memory = ReplayMemory(
         N=5,
-        obs_shape=(1,)
     )
 
     s = torch.randint(255, (1,))
