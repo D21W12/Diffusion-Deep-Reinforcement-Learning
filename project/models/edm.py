@@ -3,8 +3,6 @@ import torch
 from torch.optim import Adam
 from tqdm import tqdm
 
-from ..nn import SongUNet
-
 
 class EDM:
 
@@ -155,6 +153,7 @@ class EDM:
 
         with torch.no_grad():
 
+            # TODO: change the initial sample
             x_i = torch.normal(
                 mean=0,
                 std=self._sigma(self._t(0))**2 * self._s(self._t(0))**2,
