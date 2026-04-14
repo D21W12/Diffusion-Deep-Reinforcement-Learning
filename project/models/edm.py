@@ -2,6 +2,8 @@ import math
 
 import torch
 
+from ..nn import SongUNet
+
 
 class EDM:
 
@@ -26,7 +28,10 @@ class EDM:
         self._P_std = P_std
         self._obs_shape = obs_shape
 
-        self._score_network = ...
+        self._score_network = SongUNet(
+            in_channels=obs_shape[-1],
+            out_channels=obs_shape[-1],
+        )
 
     def _t(self, i: int) -> float:
         if i < self._N:
@@ -83,7 +88,7 @@ class EDM:
             x: torch.Tensor,
             sigma: float
     ) -> torch.Tensor:
-        return self._score_network(x)
+        return self._score_network(x, sigma)
 
     def _D(
             self,
@@ -99,28 +104,28 @@ class EDM:
 
         return skip + out
 
-    def heun_sample(self) -> torch.Tensor:
+    def heun_sample(self, batch_size: int = 1) -> torch.Tensor:
 
         x = torch.zeros(size=(self._N,) + self._obs_shape)
 
         x[0] = torch.normal(
             mean=0,
             std=self._sigma(self._t(0))**2 * self._s(self._t(0))**2,
-            size=self._obs_shape
+            size=(batch_size,) + self._obs_shape
         )  # Generate initial sample
 
         for i in range(0, self._N):
 
             # Take Euler step from t_i to t_(i + 1)
-            d_i = self._dx_dt(x[i], self._t(i))
-            x[i + 1] = x[i] + (self._t(i + 1) - self._t(i)) * d_i
+            d_i = self._dx_dt(x[:, i], self._t(i))
+            x[:, i + 1] = x[:, i] + (self._t(i + 1) - self._t(i)) * d_i
 
             # Apply second order correction unless sigma goes to zero
             if self._sigma(self._t(i + 1)) != 0:
-                d_i_prime = self._dx_dt(x[i + 1], self._t(i + 1))
-                x[i + 1] =  x[i] + (self._t(i + 1) - self._t(i)) * (0.5 * d_i + 0.5 * d_i_prime)
+                d_i_prime = self._dx_dt(x[:, i + 1], self._t(i + 1))
+                x[:, i + 1] =  x[:, i] + (self._t(i + 1) - self._t(i)) * (0.5 * d_i + 0.5 * d_i_prime)
 
-        return x[self._N]
+        return x[:, self._N]
 
 
 if __name__ == "__main__":

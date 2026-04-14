@@ -1,3 +1,6 @@
 [submodule "latex"]
 	path = latex
 	url = https://github.com/D21W12/BSc-Thesis-LaTeX.git
+[submodule "edm"]
+	path = edm
+	url = https://github.com/NVlabs/edm.git
