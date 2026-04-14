@@ -4,6 +4,7 @@ import torch.nn as nn
 from edm.training.networks import SongUNet
 
 
+# TODO: NoiseEmbedding gets projected by an MLP to the number of channels
 class NoiseEmbedding(nn.Module):
 
     def __init__(self, embedding_dims: int):
