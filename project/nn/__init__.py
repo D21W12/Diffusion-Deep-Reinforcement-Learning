@@ -1,2 +1,2 @@
 from .dqn import *
-from u_net import *
+from .u_net import *
