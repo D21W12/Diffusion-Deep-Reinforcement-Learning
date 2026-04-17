@@ -1,16 +1,19 @@
 import torch
 
 from torch.optim import Adam
-from tqdm import tqdm
+from tqdm import tqdm, trange
+
+from ..nn import UNet
 
 
 class EDM:
 
     def __init__(
             self,
-            obs_shape: tuple,
+            image_resolution: int,
+            image_channels: int,
+            batch_size: int | None = None,
             lr: float = 2e-4,
-            batch_size: int = 32,
             N: int = 35,
             sigma_min: float = 0.002,
             sigma_max: float = 80,
@@ -19,6 +22,11 @@ class EDM:
             P_mean: float = -1.2,
             P_std: float = 1.2,
     ) -> None:
+
+        self._device = "cpu"
+
+        self._image_resolution = image_resolution
+        self._image_channels = image_channels
 
         self._batch_size = batch_size
 
@@ -29,14 +37,13 @@ class EDM:
         self._rho = rho
         self._P_mean = P_mean
         self._P_std = P_std
-        self._obs_shape = obs_shape
 
-        self._score_network = SongUNet(
-            in_channels=obs_shape[0],
-            out_channels=obs_shape[0],
+        self._score_network = UNet(
+            img_resolution=image_resolution,
+            img_channels=image_channels,
         )
         self._optimizer = Adam(
-            params=self._score_network.get_parameter(),
+            params=self._score_network.parameters(),
             lr=lr
         )
 
@@ -70,14 +77,14 @@ class EDM:
         return 1 / (sigma**2 + self._sigma_data**2)**0.5
 
     def _c_noise(self, sigma: torch.Tensor) -> torch.Tensor:
-        return (1 / 4) * torch.log(sigma)
+        return (1 / 4) * torch.log(torch.tensor(sigma, device=self._device))
 
     def _sample_sigma(self, n: int) -> torch.Tensor:
-        rnd_normal = torch.randn([n, 1, 1, 1])
+        rnd_normal = torch.randn((n,), device=self._device)
         sigma = (rnd_normal * self._P_std + self._P_mean).exp()
         return sigma
 
-    def _lambda(self, sigma: float) -> float:
+    def _lambda(self, sigma: torch.Tensor) -> float:
         return (sigma**2 + self._sigma_data**2) / (sigma * self._sigma_data)**2
 
     def _dx_dt(
@@ -86,8 +93,10 @@ class EDM:
             t: float,
     ) -> torch.Tensor:
 
+        batch_sigma = torch.full((x.shape[0],), self._sigma(t), device=self._device)
+
         a = (self._sigma_dot(t) / self._sigma(t) + self._s_dot(t) / self._s(t)) * x
-        b = self._sigma_dot(t) * self._s(t) / self._sigma(t) * self._D(x / self._s(t), self._sigma(t))
+        b = self._sigma_dot(t) * self._s(t) / self._sigma(t) * self._D(x / self._s(t), batch_sigma)
 
         return a - b
 
@@ -104,24 +113,28 @@ class EDM:
             sigma: torch.Tensor
     ) -> torch.Tensor:
 
-        x = self._c_in(sigma) * x
+        x = self._c_in(sigma)[:, None, None, None] * x
         sigma = self._c_noise(sigma)
 
-        skip = self._c_skip(sigma) * x
-        out = self._c_out(sigma) * self._F(x, sigma)
+        skip = self._c_skip(sigma)[:, None, None, None] * x
+        out = self._c_out(sigma)[:, None, None, None] * self._F(x, sigma)
+
 
         return skip + out
 
     @staticmethod
     def _loss(D_yn, y, weights) -> torch.Tensor:
-        return weights * ((D_yn - y) ** 2)
+        return torch.sum(weights[:, None, None, None] * ((D_yn - y) ** 2))
 
     def _training_step(self, y: torch.Tensor):
+
+        if self._batch_size is None:
+            self._batch_size = y.shape[0]
 
         sigma = self._sample_sigma(n=self._batch_size)
         weights = self._lambda(sigma)
 
-        n = torch.randn_like(y) * sigma
+        n = torch.randn_like(y) * sigma[:, None, None, None]
         yn = y + n
 
         D_yn = self._D(yn, sigma)
@@ -138,8 +151,8 @@ class EDM:
             epoch_ann: int | None = None
     ):
         desc = f"Epoch {epoch_ann}" if epoch_ann else "Epoch process"
-        for batch in tqdm(dataloader, desc=desc):
-            self._training_step(batch)
+        for batch, _ in tqdm(dataloader, desc=desc):
+            self._training_step(batch.to(self._device))
 
     def train(
             self,
@@ -157,10 +170,11 @@ class EDM:
             x_i = torch.normal(
                 mean=0,
                 std=self._sigma(self._t(0))**2 * self._s(self._t(0))**2,
-                size=(batch_size,) + self._obs_shape
+                size=(batch_size,) + (self._image_channels, self._image_resolution, self._image_resolution),
+                device=self._device
             )  # Generate initial sample
 
-            for i in range(0, self._N):
+            for i in trange(0, self._N):
 
                 # Take Euler step from t_i to t_(i + 1)
                 d_i = self._dx_dt(x_i, self._t(i))
@@ -174,6 +188,11 @@ class EDM:
                     x_next = x_prime
 
             return x_next
+
+    def to(self, device: str) -> 'EDM':
+        self._score_network.to(device)
+        self._device = device
+        return self
 
 
 if __name__ == "__main__":
