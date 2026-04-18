@@ -34,6 +34,8 @@ if __name__ == "__main__":
         agent.load(PATH_CHECKPOINT)
         print("Loaded existing checkpoint!")
 
+    print(sum(p.numel() for p in agent._dqn.parameters() if p.requires_grad))
+
     loop = TestingLoop(
         env=env,
         agent=agent
