@@ -40,7 +40,7 @@ class Downsample(nn.Module):
                 in_channels=num_channels,
                 out_channels=num_channels,
                 kernel_size=3,
-                padding='same',
+                padding=1,
                 stride=2
             )
         else:
@@ -99,17 +99,20 @@ class Attention(nn.Module):
             num_channels=num_channels
         )
 
-        self._q = nn.LazyConv2d(
+        self._q = nn.Conv2d(
+            in_channels=num_channels,
             out_channels=num_channels,
             kernel_size=1,
             bias=True
         )
-        self._k = nn.LazyConv2d(
+        self._k = nn.Conv2d(
+            in_channels=num_channels,
             out_channels=num_channels,
             kernel_size=1,
             bias=True
         )
-        self._v = nn.LazyConv2d(
+        self._v = nn.Conv2d(
+            in_channels=num_channels,
             out_channels=num_channels,
             kernel_size=1,
             bias=True
@@ -206,10 +209,13 @@ class UNet(nn.Module):
     translated directly from their tensorflow implementation.
     """
 
+    # TODO: Fix attention resolution
+
     def __init__(
             self,
             resolution: int,
             in_channels: int,
+            start_channels: int,
             out_channels: int,
             num_res_blocks: int,
             channel_multipliers: set[int] | tuple[int],
@@ -219,7 +225,7 @@ class UNet(nn.Module):
 
         super().__init__()
 
-        channels = [in_channels] + [in_channels * m for m in channel_multipliers]
+        channels = [start_channels] + [start_channels * m for m in channel_multipliers]
 
         # Initializing embeddings
         self._emb = nn.Sequential(
@@ -238,7 +244,7 @@ class UNet(nn.Module):
         # Start convolution
         self._start = nn.Conv2d(
             in_channels=in_channels,
-            out_channels=in_channels,
+            out_channels=start_channels,
             kernel_size=3,
             padding='same',
             stride=1,
@@ -320,7 +326,9 @@ class UNet(nn.Module):
                 decoder_block["residuals"].append(block)
 
             if i_level != 0:
-                decoder_block["upsample"] = Upsample(num_channels=channels[i_level])
+                decoder_block["upsample"] = Upsample(
+                    num_channels=channels[i_level]
+                )
 
             self._decoder.append(decoder_block)
 
@@ -328,11 +336,11 @@ class UNet(nn.Module):
         self._end = nn.Sequential(
             nn.GroupNorm(
                 num_groups=32,
-                num_channels=out_channels,
+                num_channels=start_channels,
             ),
             nn.SiLU(),
             nn.Conv2d(
-                in_channels=out_channels,
+                in_channels=start_channels,
                 out_channels=out_channels,
                 kernel_size=3,
                 padding='same',
