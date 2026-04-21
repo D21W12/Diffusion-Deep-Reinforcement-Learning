@@ -2,6 +2,10 @@ import numpy as np
 import torch
 import torch.nn as nn
 
+"""
+This implementation was copied from the edm2 repository from NVIDIALabs.
+"""
+
 _constant_cache = dict()
 
 def constant(value, shape=None, dtype=None, device=None, memory_format=None):
