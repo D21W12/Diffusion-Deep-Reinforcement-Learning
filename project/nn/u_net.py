@@ -1,3 +1,5 @@
+from typing import Literal
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -76,6 +78,7 @@ class Upsample(nn.Module):
             self._conv = None
 
     def forward(self, X):
+
         y = F.interpolate(
             X,
             scale_factor=2
@@ -99,6 +102,7 @@ class Attention(nn.Module):
             num_channels=num_channels
         )
 
+        # These are all network in network connections (1x1 convolutions)
         self._q = nn.Conv2d(
             in_channels=num_channels,
             out_channels=num_channels,
@@ -143,13 +147,13 @@ class ResidualBlock(nn.Module):
             self,
             in_channels: int,
             out_channels: int,
-            dropout: float,
+            dropout: float = 0.,
+            shortcut: Literal["conv", "nin"] = "nin"
     ):
 
         super().__init__()
 
-        self._linear0 = nn.Linear(
-            in_features=in_channels,
+        self._linear0 = nn.LazyLinear(
             out_features=out_channels
         )
         self._act0 = nn.SiLU()
@@ -175,13 +179,33 @@ class ResidualBlock(nn.Module):
         self._drop = nn.Dropout(p=dropout)
 
         self._conv2 = nn.Conv2d(
-            in_channels=in_channels,
+            in_channels=out_channels,
             out_channels=out_channels,
             kernel_size=3,
             padding='same',
             stride=1,
             bias=True
         )
+
+        if in_channels != out_channels:
+            if shortcut == "nin":
+                self._conv3 = nn.Conv2d(
+                    in_channels=in_channels,
+                    out_channels=out_channels,
+                    kernel_size=1,
+                    padding=0,
+                    stride=1
+                )
+            else:
+                self._conv3 = nn.Conv2d(
+                    in_channels=in_channels,
+                    out_channels=out_channels,
+                    kernel_size=3,
+                    padding='same',
+                    stride=1
+                )
+        else:
+            self._conv3 = None
 
     def forward(
             self,
@@ -200,6 +224,9 @@ class ResidualBlock(nn.Module):
         h = self._drop(h)
         h = self._conv2(h)
 
+        if self._conv3:
+            X = self._conv3(X)
+
         return X + h
 
 
@@ -209,7 +236,66 @@ class UNet(nn.Module):
     translated directly from their tensorflow implementation.
     """
 
-    # TODO: Fix attention resolution
+    def _get_encoder_channels(
+            self,
+            i_level: int,
+            i_block: int | None = None,
+            out: bool | None = None,
+            attention: bool = False,
+    ):
+        assert out is not None or attention or i_block is None
+
+        if i_block is None:
+            return self._start_channels * self._channel_multipliers[i_level]
+        elif attention:
+            return self._start_channels * self._channel_multipliers[i_level]
+        elif out:
+            return self._start_channels * self._channel_multipliers[i_level]
+        elif i_level == 0 and i_block == 0:
+            return self._start_channels
+        elif i_block == 0:
+            return self._start_channels * self._channel_multipliers[i_level - 1]
+        else:
+            return self._start_channels * self._channel_multipliers[i_level]
+
+    def _get_decoder_channels(
+            self,
+            i_level: int,
+            i_block: int | None = None,
+            out: bool | None = None,
+            attention: bool = False,
+    ):
+        if i_block is None:
+            return self._start_channels * self._channel_multipliers[i_level]
+        elif attention:
+            return self._start_channels * self._channel_multipliers[i_level]
+        elif out:
+            return self._start_channels * self._channel_multipliers[i_level]
+        elif i_level == len(self._channel_multipliers) - 1 and i_block == 0:
+            in_ = self._start_channels * self._channel_multipliers[-1]
+            skip = self._get_skip_channels(i_level, i_block)
+            return in_ + skip
+        elif i_block == 0:
+            in_ = self._start_channels * self._channel_multipliers[i_level + 1]
+            skip = self._get_skip_channels(i_level, i_block)
+            return in_ + skip
+        else:
+            in_ = self._start_channels * self._channel_multipliers[i_level]
+            skip = self._get_skip_channels(i_level, i_block)
+            return in_ + skip
+
+    def _get_skip_channels(
+            self,
+            i_level: int,
+            i_block: int,
+    ):
+        if i_level != 0 and i_block == self._num_res_blocks:
+            return self._start_channels * self._channel_multipliers[i_level - 1]
+        else:
+            return self._start_channels * self._channel_multipliers[i_level]
+
+    def _get_bottleneck_channels(self):
+        return self._start_channels * self._channel_multipliers[-1]
 
     def __init__(
             self,
@@ -220,25 +306,32 @@ class UNet(nn.Module):
             num_res_blocks: int,
             channel_multipliers: set[int] | tuple[int],
             attention_resolutions: set[int] | tuple[int],
-            dropout: float = 0
+            dropout: float = 0.,
+            conv_resample: bool = True
     ):
 
         super().__init__()
 
-        channels = [start_channels] + [start_channels * m for m in channel_multipliers]
+        self._resolution = resolution
+        self._in_channels = in_channels
+        self._start_channels = start_channels
+        self._out_channels = out_channels
+        self._num_res_blocks = num_res_blocks
+        self._channel_multipliers = channel_multipliers
+        self._attention_resolutions = attention_resolutions
 
         # Initializing embeddings
         self._emb = nn.Sequential(
-            NoiseEmbedding(dim=in_channels),
+            NoiseEmbedding(dim=start_channels),
             nn.Linear(
-                in_features=in_channels,
-                out_features=in_channels * 4,
+                in_features=start_channels,
+                out_features=start_channels * 4,
             ),
             nn.SiLU(),
             nn.Linear(
-                in_features=in_channels * 4,
-                out_features=in_channels * 4,
-            )
+                in_features=start_channels * 4,
+                out_features=start_channels * 4,
+            ),
         )
 
         # Start convolution
@@ -259,35 +352,35 @@ class UNet(nn.Module):
             encoder_block["residuals"] = nn.ModuleList()
             for i_block in range(num_res_blocks):
 
-                block_in = channels[i_level + 1] if i_block != 0 else channels[i_level]
-                block_out = channels[i_level + 1]
-
                 block = nn.ModuleDict()
                 block["residual"] = ResidualBlock(
-                    in_channels=block_in,
-                    out_channels=block_out,
+                    in_channels=self._get_encoder_channels(i_level, i_block, out=False),
+                    out_channels=self._get_encoder_channels(i_level, i_block, out=True),
                     dropout=0
                 )
 
-                if resolution // 2 ** i_block in attention_resolutions:
+                if resolution // 2 ** i_level in attention_resolutions:
                     block["attention"] = Attention(
-                        num_channels=block_out
+                        num_channels=self._get_encoder_channels(i_level, i_block, attention=True)
                     )
 
                 encoder_block["residuals"].append(block)
 
+
             if i_level != len(channel_multipliers) - 1:
+
                 encoder_block["downsample"] = Downsample(
-                    num_channels=channels[i_level + 1]
+                    num_channels=self._get_encoder_channels(i_level),
+                    use_conv=conv_resample
                 )
 
             self._encoder.append(encoder_block)
 
-        bottleneck_num = channels[-1]
+        bottleneck_num = self._get_bottleneck_channels()
 
         # Initializing the bottleneck
         self._bottleneck_res1 = ResidualBlock(
-            in_channels=channels[-1],
+            in_channels=bottleneck_num,
             out_channels=bottleneck_num,
             dropout=0
         )
@@ -295,7 +388,7 @@ class UNet(nn.Module):
             num_channels=bottleneck_num
         )
         self._bottleneck_res2 = ResidualBlock(
-            in_channels=channels[-1],
+            in_channels=bottleneck_num,
             out_channels=bottleneck_num,
             dropout=0
         )
@@ -308,26 +401,25 @@ class UNet(nn.Module):
             decoder_block["residuals"] = nn.ModuleList()
             for i_block in range(num_res_blocks + 1):
 
-                block_in = channels[i_level] if i_block != 0 else channels[i_level + 1]
-                block_out = channels[i_level]
-
                 block = nn.ModuleDict()
                 block["residual"] = ResidualBlock(
-                    in_channels=block_in,
-                    out_channels=block_out,
+                    in_channels=self._get_decoder_channels(i_level, i_block, out=False),
+                    out_channels=self._get_decoder_channels(i_level, i_block, out=True),
                     dropout=dropout
                 )
 
                 if resolution // 2 ** i_level in attention_resolutions:
+
                     block["attention"] = Attention(
-                        num_channels=block_out
+                        num_channels=self._get_decoder_channels(i_level, i_block, attention=True)
                     )
 
                 decoder_block["residuals"].append(block)
 
             if i_level != 0:
                 decoder_block["upsample"] = Upsample(
-                    num_channels=channels[i_level]
+                    num_channels=self._get_decoder_channels(i_level),
+                    use_conv=conv_resample
                 )
 
             self._decoder.append(decoder_block)
@@ -373,14 +465,14 @@ class UNet(nn.Module):
         h = hs[-1]
 
         # Bottleneck
-        h = self._bottleneck_res1(h)
+        h = self._bottleneck_res1(h, emb)
         h = self._bottleneck_attn(h)
-        h = self._bottleneck_res2(h)
+        h = self._bottleneck_res2(h, emb)
 
         # Decoder
         for decoder_block in reversed(self._decoder):
             for res_block in decoder_block["residuals"]:
-                h = torch.concat([h, hs[-1]], dim=1)
+                h = torch.concat([h, hs.pop()], dim=1)
                 h = res_block["residual"](h, emb)
                 if "attention" in res_block:
                     h = res_block["attention"](h)
@@ -391,10 +483,15 @@ class UNet(nn.Module):
 
 
 if __name__ == "__main__":
-    sigmas = torch.linspace(0, 80, 16)
-    print(f"Shape: {sigmas.shape}")
-    emb = NoiseEmbedding(dim=10)
-    embeddings = emb(sigmas)
-    print(embeddings)
-
-
+    model = UNet(
+        resolution=32,
+        in_channels=3,
+        start_channels=128,
+        out_channels=3,
+        num_res_blocks=2,
+        channel_multipliers=(1, 2, 2, 2),
+        attention_resolutions=[4],
+    )
+    x = torch.zeros((16, 3, 32, 32))
+    sigmas = torch.linspace(0.2, 80, 16)
+    y = model(x, sigmas)
