@@ -14,7 +14,7 @@ class EDM:
             image_channels: int,
             batch_size: int | None = None,
             lr: float = 1e-3,
-            N: int = 18,
+            N: int = 35,
             sigma_min: float = 0.002,
             sigma_max: float = 80,
             sigma_data: float = 0.5,
@@ -160,7 +160,7 @@ class EDM:
 
         self._epochs += 1
 
-        if print_loss: print(f"Loss: {loss:.2f}")
+        if print_loss: print(f"Loss: {loss / len(dataloader):.2f}")
 
     def train(
             self,
@@ -189,7 +189,7 @@ class EDM:
             for i in trange(0, self._N):
 
                 # Take Euler step from t_i to t_(i + 1)
-                d_i = self._dx_dt(x_i, self._t(i))
+                d_i = self._dx_dt(x_next, self._t(i))
                 x_prime = x_next + (self._t(i + 1) - self._t(i)) * d_i
 
                 # Apply second order correction unless sigma goes to zero
