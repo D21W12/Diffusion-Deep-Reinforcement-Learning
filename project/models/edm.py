@@ -14,7 +14,7 @@ class EDM:
             image_channels: int,
             batch_size: int | None = None,
             lr: float = 1e-3,
-            N: int = 35,
+            N: int = 18,
             sigma_min: float = 0.002,
             sigma_max: float = 80,
             sigma_data: float = 0.5,
@@ -104,7 +104,8 @@ class EDM:
             x: torch.Tensor,
             sigma: torch.Tensor
     ) -> torch.Tensor:
-        return self._score_network(x, sigma)
+        y = self._score_network(x, sigma)
+        return y
 
     def _D(
             self,
@@ -122,7 +123,7 @@ class EDM:
 
     @staticmethod
     def _loss(D_yn, y, weights) -> torch.Tensor:
-        return torch.sum(weights[:, None, None, None] * ((D_yn - y) ** 2))
+        return torch.mean(weights[:, None, None, None] * (D_yn - y) ** 2)
 
     def _training_step(self, y: torch.Tensor):
 
@@ -148,7 +149,7 @@ class EDM:
     def _epoch(
             self,
             dataloader,
-            print_loss: bool = False
+            print_loss: bool = True
     ):
 
         loss = 0
@@ -159,16 +160,17 @@ class EDM:
 
         self._epochs += 1
 
-        print(f"Loss: {loss:.2f}")
+        if print_loss: print(f"Loss: {loss:.2f}")
 
     def train(
             self,
             epochs: int,
             dataloader,
+            print_loss: bool = True
     ):
         self._score_network.train()
         for epoch in range(epochs):
-            self._epoch(dataloader)
+            self._epoch(dataloader, print_loss=print_loss)
 
     def heun_sampler(self, batch_size: int = 1) -> torch.Tensor:
 
@@ -176,24 +178,24 @@ class EDM:
 
         with torch.no_grad():
 
-            # TODO: change the initial sample
-            x_i = torch.normal(
-                mean=0,
-                std=self._sigma(self._t(0))**2 * self._s(self._t(0))**2,
-                size=(batch_size,) + (self._image_channels, self._image_resolution, self._image_resolution),
-                device=self._device
-            )  # Generate initial sample
+            x_i_shape = (batch_size, self._image_channels, self._image_resolution, self._image_resolution)
+            x_i = torch.randn(x_i_shape, device=self._device)
+            x_i = x_i * self._sigma(self._t(0)) * self._s(self._t(0))
+
+            print(x_i.mean(), x_i.std())
+
+            x_next = x_i
 
             for i in trange(0, self._N):
 
                 # Take Euler step from t_i to t_(i + 1)
                 d_i = self._dx_dt(x_i, self._t(i))
-                x_prime = x_i + (self._t(i + 1) - self._t(i)) * d_i
+                x_prime = x_next + (self._t(i + 1) - self._t(i)) * d_i
 
                 # Apply second order correction unless sigma goes to zero
                 if self._sigma(self._t(i + 1)) != 0:
                     d_i_prime = self._dx_dt(x_prime, self._t(i + 1))
-                    x_next =  x_i + (self._t(i + 1) - self._t(i)) * (0.5 * d_i + 0.5 * d_i_prime)
+                    x_next =  x_next + (self._t(i + 1) - self._t(i)) * (0.5 * d_i + 0.5 * d_i_prime)
                 else:
                     x_next = x_prime
 
@@ -207,7 +209,7 @@ class EDM:
     def save_checkpoint(self, f) -> None:
         torch.save({
             'score_network_state_dict': self._score_network.state_dict(),
-            'optimizer_state_state_dict': self._optimizer.state_dict(),
+            'optimizer_state_dict': self._optimizer.state_dict(),
             'epochs': self._epochs
         }, f)
 
