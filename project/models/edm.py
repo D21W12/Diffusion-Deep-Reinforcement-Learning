@@ -13,7 +13,7 @@ class EDM:
             image_resolution: int,
             image_channels: int,
             batch_size: int | None = None,
-            lr: float = 2e-4,
+            lr: float = 1e-3,
             N: int = 35,
             sigma_min: float = 0.002,
             sigma_max: float = 80,
@@ -21,6 +21,7 @@ class EDM:
             rho: int = 7,
             P_mean: float = -1.2,
             P_std: float = 1.2,
+            network_kwargs: dict | None = None,
     ) -> None:
 
         self._device = "cpu"
@@ -29,6 +30,7 @@ class EDM:
         self._image_channels = image_channels
 
         self._batch_size = batch_size
+        self._epochs = 0
 
         self._N = N
         self._sigma_min = sigma_min
@@ -38,13 +40,10 @@ class EDM:
         self._P_mean = P_mean
         self._P_std = P_std
 
-        self._score_network = UNet(
-            img_resolution=image_resolution,
-            img_channels=image_channels,
-        )
+        self._score_network = UNet(**network_kwargs)
         self._optimizer = Adam(
             params=self._score_network.parameters(),
-            lr=lr
+            lr=lr,
         )
 
     def _t(self, i: int) -> float:
@@ -76,15 +75,15 @@ class EDM:
     def _c_in(self, sigma: torch.Tensor) -> torch.Tensor:
         return 1 / (sigma**2 + self._sigma_data**2)**0.5
 
-    def _c_noise(self, sigma: torch.Tensor) -> torch.Tensor:
-        return (1 / 4) * torch.log(torch.tensor(sigma, device=self._device))
+    def _c_noise(self, sigmas: torch.Tensor) -> torch.Tensor:
+        return (1 / 4) * torch.log(sigmas)
 
     def _sample_sigma(self, n: int) -> torch.Tensor:
         rnd_normal = torch.randn((n,), device=self._device)
         sigma = (rnd_normal * self._P_std + self._P_mean).exp()
         return sigma
 
-    def _lambda(self, sigma: torch.Tensor) -> float:
+    def _lambda(self, sigma: torch.Tensor) -> torch.Tensor:
         return (sigma**2 + self._sigma_data**2) / (sigma * self._sigma_data)**2
 
     def _dx_dt(
@@ -110,17 +109,16 @@ class EDM:
     def _D(
             self,
             x: torch.Tensor,
-            sigma: torch.Tensor
+            sigmas: torch.Tensor
     ) -> torch.Tensor:
 
-        x = self._c_in(sigma)[:, None, None, None] * x
-        sigma = self._c_noise(sigma)
+        with torch.no_grad():
+            c_skip = self._c_skip(sigmas)[:, None, None, None]
+            c_out = self._c_out(sigmas)[:, None, None, None]
+            c_in = self._c_in(sigmas)[:, None, None, None]
+            c_noise = self._c_noise(sigmas)
 
-        skip = self._c_skip(sigma)[:, None, None, None] * x
-        out = self._c_out(sigma)[:, None, None, None] * self._F(x, sigma)
-
-
-        return skip + out
+        return c_skip * x + c_out * self._F(c_in * x, c_noise)
 
     @staticmethod
     def _loss(D_yn, y, weights) -> torch.Tensor:
@@ -145,24 +143,36 @@ class EDM:
         loss.backward()
         self._optimizer.step()
 
+        return loss.item()
+
     def _epoch(
             self,
             dataloader,
-            epoch_ann: int | None = None
+            print_loss: bool = False
     ):
-        desc = f"Epoch {epoch_ann}" if epoch_ann else "Epoch process"
+
+        loss = 0
+
+        desc = f"Epoch {self._epochs + 1}"
         for batch, _ in tqdm(dataloader, desc=desc):
-            self._training_step(batch.to(self._device))
+            loss += self._training_step(batch.to(self._device))
+
+        self._epochs += 1
+
+        print(f"Loss: {loss:.2f}")
 
     def train(
             self,
             epochs: int,
             dataloader,
     ):
+        self._score_network.train()
         for epoch in range(epochs):
             self._epoch(dataloader)
 
     def heun_sampler(self, batch_size: int = 1) -> torch.Tensor:
+
+        self._score_network.eval()
 
         with torch.no_grad():
 
@@ -194,10 +204,17 @@ class EDM:
         self._device = device
         return self
 
+    def save_checkpoint(self, f) -> None:
+        torch.save({
+            'score_network_state_dict': self._score_network.state_dict(),
+            'optimizer_state_state_dict': self._optimizer.state_dict(),
+            'epochs': self._epochs
+        }, f)
 
-if __name__ == "__main__":
-    edm = EDM((1,))
-    print(edm._t(0))
-    print(edm._t(1))
-    print(edm._t(2))
-    print(edm._t(35))
+    def load_checkpoint(self, f) -> None:
+
+        data = torch.load(f, map_location=self._device)
+
+        self._score_network.load_state_dict(data["score_network_state_dict"])
+        self._optimizer.load_state_dict(data["optimizer_state_dict"])
+        self._epochs = data["epochs"]

@@ -20,7 +20,7 @@ class NoiseEmbedding(nn.Module):
     ):
 
         half_dim = self._dim // 2
-        i = torch.arange(half_dim)
+        i = torch.arange(half_dim, device=sigmas.device)
         emb = 1 / 10000 ** (2 * i / self._dim)
         emb = torch.outer(sigmas, emb)
         return torch.concat([torch.sin(emb), torch.cos(emb)], dim=1)
@@ -291,6 +291,8 @@ class UNet(nn.Module):
     ):
         if i_level != 0 and i_block == self._num_res_blocks:
             return self._start_channels * self._channel_multipliers[i_level - 1]
+        elif i_level == 0 and i_block == self._num_res_blocks:
+            return self._start_channels
         else:
             return self._start_channels * self._channel_multipliers[i_level]
 
@@ -309,6 +311,8 @@ class UNet(nn.Module):
             dropout: float = 0.,
             conv_resample: bool = True
     ):
+
+        assert len(channel_multipliers) > 0
 
         super().__init__()
 
@@ -428,11 +432,11 @@ class UNet(nn.Module):
         self._end = nn.Sequential(
             nn.GroupNorm(
                 num_groups=32,
-                num_channels=start_channels,
+                num_channels=start_channels * channel_multipliers[0]
             ),
             nn.SiLU(),
             nn.Conv2d(
-                in_channels=start_channels,
+                in_channels=start_channels * channel_multipliers[0],
                 out_channels=out_channels,
                 kernel_size=3,
                 padding='same',
@@ -488,8 +492,8 @@ if __name__ == "__main__":
         in_channels=3,
         start_channels=128,
         out_channels=3,
-        num_res_blocks=2,
-        channel_multipliers=(1, 2, 2, 2),
+        num_res_blocks=1,
+        channel_multipliers=(2, 2, 2, 2),
         attention_resolutions=[4],
     )
     x = torch.zeros((16, 3, 32, 32))

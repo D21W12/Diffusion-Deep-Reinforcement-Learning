@@ -10,6 +10,7 @@ class Timer:
 
     def start(self):
         self._start = perf_counter()
+        return self
 
     def result(self):
         return self._stop - self._start
@@ -21,4 +22,5 @@ class Timer:
     def print_result(self):
         if self._tag:
             print(f"Result ({self._tag}): {self.result()}")
+            return
         print(f"Result: {self.result()}")
