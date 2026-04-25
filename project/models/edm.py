@@ -3,7 +3,7 @@ import torch
 from torch.optim import Adam
 from tqdm import tqdm, trange
 
-from ..nn import UNet
+from ..nn import UNet, UnetEDM
 
 
 class EDM:
@@ -14,7 +14,7 @@ class EDM:
             image_channels: int,
             batch_size: int | None = None,
             lr: float = 1e-3,
-            N: int = 35,
+            N: int = 32,
             sigma_min: float = 0.002,
             sigma_max: float = 80,
             sigma_data: float = 0.5,
@@ -40,7 +40,7 @@ class EDM:
         self._P_mean = P_mean
         self._P_std = P_std
 
-        self._score_network = UNet(**network_kwargs)
+        self._score_network = UnetEDM(**network_kwargs)
         self._optimizer = Adam(
             params=self._score_network.parameters(),
             lr=lr,
