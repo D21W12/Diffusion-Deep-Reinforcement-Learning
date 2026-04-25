@@ -3,7 +3,7 @@ import torch
 from torch.optim import Adam
 from tqdm import tqdm, trange
 
-from ..nn import UNet
+from ..nn import UNet, EDM2UNet
 
 
 class EDMEvelynn:
@@ -26,6 +26,7 @@ class EDMEvelynn:
             rho: int = 7,
             P_mean: float = -1.2,
             P_std: float = 1.2,
+            network: str = "edm2"
     ) -> None:
 
         self._device = "cpu"
@@ -44,16 +45,28 @@ class EDMEvelynn:
         self._P_mean = P_mean
         self._P_std = P_std
 
-        self._score_network = UNet(
-            resolution=img_resolution,
-            in_channels=img_channels,
-            start_channels=start_channels,
-            out_channels=img_channels,
-            num_res_blocks=num_blocks,
-            channel_multipliers=channel_mult,
-            attention_resolutions=attention_resolutions,
-            dropout=dropout
-        )
+        # Initializing score network
+        if network == "edm2":
+            self._score_network = EDM2UNet(
+                img_resolution=img_resolution,
+                img_channels=img_channels,
+                model_channels=start_channels,
+                num_blocks=num_blocks,
+                channel_mult=channel_mult,
+                attn_resolutions=attention_resolutions,
+            )
+        else:
+            self._score_network = UNet(
+                resolution=img_resolution,
+                in_channels=img_channels,
+                start_channels=start_channels,
+                out_channels=img_channels,
+                num_res_blocks=num_blocks,
+                channel_multipliers=channel_mult,
+                attention_resolutions=attention_resolutions,
+                dropout=dropout
+            )
+
         self._optimizer = Adam(
             params=self._score_network.parameters(),
             lr=lr,

@@ -1,5 +1,5 @@
-import numpy as np
 import torch
+import numpy as np
 import torch.nn as nn
 
 """
@@ -79,7 +79,7 @@ def mp_cat(a, b, dim=1, t=0.5):
     return torch.cat([wa * a , wb * b], dim=dim)
 
 
-class MPFourier(torch.nn.Module):
+class MPFourier(nn.Module):
     def __init__(self, num_channels, bandwidth=1):
         super().__init__()
         self.register_buffer('freqs', 2 * np.pi * torch.randn(num_channels) * bandwidth)
@@ -93,7 +93,7 @@ class MPFourier(torch.nn.Module):
         return y.to(x.dtype)
 
 
-class MPConv(torch.nn.Module):
+class MPConv(nn.Module):
     def __init__(self, in_channels, out_channels, kernel):
         super().__init__()
         self.out_channels = out_channels
@@ -113,7 +113,7 @@ class MPConv(torch.nn.Module):
         return torch.nn.functional.conv2d(x, w, padding=(w.shape[-1]//2,))
 
 
-class Block(torch.nn.Module):
+class Block(nn.Module):
     def __init__(self,
         in_channels,                    # Number of input channels.
         out_channels,                   # Number of output channels.
@@ -273,63 +273,3 @@ class UNet(nn.Module):
             x = block(x, emb)
         x = self.out_conv(x, gain=self.out_gain)
         return x
-
-
-class Preconditioning(torch.nn.Module):
-    def __init__(self,
-        img_resolution,         # Image resolution.
-        img_channels,           # Image channels.
-        label_dim       = 0,    # Class label dimensionality. 0 = unconditional.
-        use_fp16        = True, # Run the model at FP16 precision?
-        sigma_data      = 0.5,  # Expected standard deviation of the training data.
-        logvar_channels = 128,  # Intermediate dimensionality for uncertainty estimation.
-        **unet_kwargs,          # Keyword arguments for UNet.
-    ):
-        super().__init__()
-        self.img_resolution = img_resolution
-        self.img_channels = img_channels
-        self.label_dim = label_dim
-        self.use_fp16 = use_fp16
-        self.sigma_data = sigma_data
-        self.unet = UNet(img_resolution=img_resolution, img_channels=img_channels, label_dim=label_dim, **unet_kwargs)
-        self.logvar_fourier = MPFourier(logvar_channels)
-        self.logvar_linear = MPConv(logvar_channels, 1, kernel=[])
-
-    def forward(self, x, sigma, class_labels=None, force_fp32=False, return_logvar=False, **unet_kwargs):
-        x = x.to(torch.float32)
-        sigma = sigma.to(torch.float32).reshape(-1, 1, 1, 1)
-        class_labels = None if self.label_dim == 0 else torch.zeros([1, self.label_dim], device=x.device) if class_labels is None else class_labels.to(torch.float32).reshape(-1, self.label_dim)
-        dtype = torch.float16 if (self.use_fp16 and not force_fp32 and x.device.type == 'cuda') else torch.float32
-
-        # Preconditioning weights.
-        c_skip = self.sigma_data ** 2 / (sigma ** 2 + self.sigma_data ** 2)
-        c_out = sigma * self.sigma_data / (sigma ** 2 + self.sigma_data ** 2).sqrt()
-        c_in = 1 / (self.sigma_data ** 2 + sigma ** 2).sqrt()
-        c_noise = sigma.flatten().log() / 4
-
-        # Run the model.
-        x_in = (c_in * x).to(dtype)
-        F_x = self.unet(x_in, c_noise, class_labels, **unet_kwargs)
-        D_x = c_skip * x + c_out * F_x.to(torch.float32)
-
-        # Estimate uncertainty if requested.
-        if return_logvar:
-            logvar = self.logvar_linear(self.logvar_fourier(c_noise)).reshape(-1, 1, 1, 1)
-            return D_x, logvar # u(sigma) in Equation 21
-        return D_x
-
-
-class EDM2Loss:
-    def __init__(self, P_mean=-0.4, P_std=1.0, sigma_data=0.5):
-        self.P_mean = P_mean
-        self.P_std = P_std
-        self.sigma_data = sigma_data
-
-    def __call__(self, net, images, labels=None):
-        rnd_normal = torch.randn([images.shape[0], 1, 1, 1], device=images.device)
-        sigma = (rnd_normal * self.P_std + self.P_mean).exp()
-        weight = (sigma ** 2 + self.sigma_data ** 2) / (sigma * self.sigma_data) ** 2
-        noise = torch.randn_like(images) * sigma
-        denoised, logvar = net(images + noise, sigma, labels, return_logvar=True)
-        loss = (weight / logvar.exp()) * ((denoised - images) ** 2) + logvar
-        return loss
