@@ -1,22 +1,22 @@
 import torch
 
+from ..nn import EDM2UNet, EDM2Loss
+
 from torch.optim import Adam
 from tqdm import tqdm, trange
 
-from ..nn import UNet
 
-
-class EDMEvelynn:
+class EDM2:
 
     def __init__(
             self,
             img_resolution: int,
             img_channels: int,
             start_channels: int,
-            channel_mult: tuple[int] | list[int],
+            channel_mult: list,
             num_blocks: int,
             attention_resolutions: set[int] | tuple[int] | list[int],
-            dropout: float,
+            logvar_channels: int = 128,
             batch_size: int | None = None,
             lr: float = 1e-3,
             N: int = 32,
@@ -26,7 +26,7 @@ class EDMEvelynn:
             rho: int = 7,
             P_mean: float = -1.2,
             P_std: float = 1.2,
-    ) -> None:
+    ):
 
         self._device = "cpu"
 
@@ -44,19 +44,25 @@ class EDMEvelynn:
         self._P_mean = P_mean
         self._P_std = P_std
 
-        self._score_network = UNet(
-            resolution=img_resolution,
-            in_channels=img_channels,
-            start_channels=start_channels,
-            out_channels=img_channels,
-            num_res_blocks=num_blocks,
-            channel_multipliers=channel_mult,
-            attention_resolutions=attention_resolutions,
-            dropout=dropout
+        self._score_network = EDM2UNet(
+            img_resolution=img_resolution,
+            img_channels=img_channels,
+            sigma_data=sigma_data,
+            logvar_channels=logvar_channels,
+            model_channels=start_channels,
+            channel_mult=channel_mult,
+            num_blocks=num_blocks,
+            attn_resolutions=attention_resolutions,
         )
         self._optimizer = Adam(
             params=self._score_network.parameters(),
             lr=lr,
+            betas=(0.9, 0.99)
+        )
+        self._loss_fn = EDM2Loss(
+            P_mean=P_mean,
+            P_std=P_std,
+            sigma_data=sigma_data,
         )
 
     def _t(self, i: int) -> float:
@@ -96,9 +102,6 @@ class EDMEvelynn:
         sigma = (rnd_normal * self._P_std + self._P_mean).exp()
         return sigma
 
-    def _lambda(self, sigma: torch.Tensor) -> torch.Tensor:
-        return (sigma**2 + self._sigma_data**2) / (sigma * self._sigma_data)**2
-
     def _dx_dt(
             self,
             x: torch.Tensor,
@@ -112,48 +115,28 @@ class EDMEvelynn:
 
         return a - b
 
-    def _F(
-            self,
-            x: torch.Tensor,
-            sigma: torch.Tensor
-    ) -> torch.Tensor:
-        y = self._score_network(x, sigma)
-        return y
-
     def _D(
             self,
             x: torch.Tensor,
             sigmas: torch.Tensor
     ) -> torch.Tensor:
 
-        with torch.no_grad():
-            c_skip = self._c_skip(sigmas)[:, None, None, None]
-            c_out = self._c_out(sigmas)[:, None, None, None]
-            c_in = self._c_in(sigmas)[:, None, None, None]
-            c_noise = self._c_noise(sigmas)
+        return self._score_network(x, sigmas)
 
-        return c_skip * x + c_out * self._F(c_in * x, c_noise)
-
-    @staticmethod
-    def _loss(D_yn, y, weights) -> torch.Tensor:
-        return torch.mean(weights[:, None, None, None] * (D_yn - y) ** 2)
+    def _loss(self, X) -> torch.Tensor:
+        return self._loss_fn(
+            net=self._score_network,
+            images=X
+        )
 
     def _training_step(self, y: torch.Tensor):
 
         if self._batch_size is None:
             self._batch_size = y.shape[0]
 
-        sigma = self._sample_sigma(n=y.shape[0])
-        weights = self._lambda(sigma)
-
-        n = torch.randn_like(y) * sigma[:, None, None, None]
-        yn = y + n
-
-        D_yn = self._D(yn, sigma)
-
         # Doing a gradient descent step
         self._optimizer.zero_grad()
-        loss = self._loss(D_yn, y, weights)
+        loss = self._loss(y)
         loss.backward()
         self._optimizer.step()
 
@@ -214,7 +197,7 @@ class EDMEvelynn:
 
             return x_next
 
-    def to(self, device: str) -> 'EDM':
+    def to(self, device: str) -> 'EDM2':
         self._score_network.to(device)
         self._device = device
         return self
