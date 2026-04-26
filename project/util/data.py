@@ -6,6 +6,33 @@ import torch
 from torch.utils.data import Dataset
 
 
+class ReplayMemoryData(Dataset):
+
+    def __init__(
+            self,
+            memory: str,
+            *args,
+            **kwargs,
+    ) -> None:
+        super().__init__(*args, **kwargs)
+
+        state_dict = torch.load(memory)
+
+        full = state_dict["full"]
+        images = state_dict["s"]
+        if not full:
+            i = state_dict["i"]
+            images = images[:i]
+
+        self._images = images
+
+    def __len__(self):
+        return self._images.shape[0]
+
+    def __getitem__(self, item):
+        return self._images[item]
+
+
 class Sprites(Dataset):
 
     def __init__(
