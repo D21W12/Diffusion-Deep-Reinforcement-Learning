@@ -52,7 +52,7 @@ class DQNAgent(Agent):
         self._target_dqn.load_state_dict(self._dqn.state_dict())
 
         # self._optimizer = RMSprop(
-        #     params=self._dqn.parameters(),
+        #     params=self._dqn.checkpoints(),
         #     lr=lr,
         #     momentum=0.95,
         #     eps=0.01,
@@ -101,7 +101,7 @@ class DQNAgent(Agent):
 
         # Check whether agent is in train mode
         if not self._train:
-            raise Exception("Agent must be set to train mode before being able to update parameters.")
+            raise Exception("Agent must be set to train mode before being able to update checkpoints.")
 
         if self._is_update_step():
             self._update_network()
@@ -145,7 +145,7 @@ class DQNAgent(Agent):
 
     def _update_target_dqn(self) -> None:
         """
-        Method for updating the target network, with the parameters
+        Method for updating the target network, with the checkpoints
         of the non-target network.
         """
         self._target_dqn.load_state_dict(self._dqn.state_dict())

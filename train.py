@@ -8,8 +8,8 @@ from project.environments import BaseWrapper
 from project.agents import DQNAgent, DDQNAgent
 from project.environments.loops import TrainingLoop
 
-PATH_CHECKPOINT = os.path.join("parameters", "model-24032026rms.pth")
-PATH_MEMORY = os.path.join("parameters", "memory-24032026rms.pth")
+PATH_CHECKPOINT = os.path.join("checkpoints", "model-24032026rms.pth")
+PATH_MEMORY = os.path.join("checkpoints", "memory-24032026rms.pth")
 
 FRAMES = 500_000
 LR = 2.5e-4
