@@ -1,3 +1,3 @@
 from .dqn import *
-from .ddpm import UNet as DDPMUNet
+from .u_net import UNetEvelynn
 from .edm2 import UNet as EDM2UNet

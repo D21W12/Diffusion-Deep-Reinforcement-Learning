@@ -81,6 +81,7 @@ class Upsample(nn.Module):
 
         y = F.interpolate(
             X,
+            mode='nearest',
             scale_factor=2
         )
         if self._conv:
@@ -231,7 +232,7 @@ class ResidualBlock(nn.Module):
         return X + h
 
 
-class UNet(nn.Module):
+class UNetEvelynn(nn.Module):
     """
     This UNet architecture follows the same architecture as Ho et al. (2020),
     translated directly from their tensorflow implementation.
@@ -488,7 +489,7 @@ class UNet(nn.Module):
 
 
 if __name__ == "__main__":
-    model = UNet(
+    model = UNetEvelynn(
         resolution=32,
         in_channels=3,
         start_channels=128,
