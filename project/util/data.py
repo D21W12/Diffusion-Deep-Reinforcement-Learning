@@ -19,9 +19,9 @@ class Sprites(Dataset):
     ):
         super().__init__(*args, **kwargs)
 
-        labels = np.load(labels).argwhere()
-        images = np.load(images)[labels == target]
-        images = torch.from_numpy(images).permute(0, 3, 1, 2)
+        mask = np.argwhere(np.load(labels))[:, 1] == target
+        images = np.load(images)
+        images = images[mask]
 
         self._images = images
         self._transform = transform
@@ -41,4 +41,3 @@ if __name__ == "__main__":
     images = np.load(os.path.join(path, "sprites.npy"))
     labels = np.load(os.path.join(path, "sprites_labels.npy"))
     print(images.permute(0, 3, 1, 2).shape)
-
