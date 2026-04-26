@@ -1,7 +1,6 @@
 import os
 
 import numpy as np
-import torch
 
 from torch.utils.data import Dataset
 
@@ -34,6 +33,32 @@ class ReplayMemoryData(Dataset):
 
 
 class Sprites(Dataset):
+
+    def __init__(
+            self,
+            images: str,
+            transform,
+            *args,
+            **kwargs
+    ):
+        super().__init__(*args, **kwargs)
+
+        images = np.load(images)
+
+        self._images = images
+        self._transform = transform
+
+    def __len__(self):
+        return self._images.shape[0]
+
+    def __getitem__(self, item):
+        image = self._images[item]
+        if self._transform:
+            image = self._transform(image)
+        return image
+
+
+class SpritesSubset(Dataset):
 
     def __init__(
             self,

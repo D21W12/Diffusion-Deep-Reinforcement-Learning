@@ -186,7 +186,7 @@ class EDMEvelynn:
 
         self._epochs += 1
 
-        if print_loss: print(f"Loss: {loss / len(dataloader):.2f}")
+        if print_loss: print(f"Loss: {loss / len(dataloader):.5f}")
 
     def train(
             self,
@@ -207,8 +207,6 @@ class EDMEvelynn:
             x_i_shape = (batch_size, self._image_channels, self._image_resolution, self._image_resolution)
             x_i = torch.randn(x_i_shape, device=self._device)
             x_i = x_i * self._sigma(self._t(0)) * self._s(self._t(0))
-
-            print(x_i.mean(), x_i.std())
 
             x_next = x_i
 
