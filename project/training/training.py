@@ -17,7 +17,6 @@ def train_dqn(
         checkpoint_path: str,
         memory_checkpoint_path: str,
         device: str,
-        frames: int,
         *args,
         **kwargs,
 ) -> None:
@@ -26,7 +25,6 @@ def train_dqn(
         checkpoint_path=checkpoint_path,
         memory_checkpoint_path=memory_checkpoint_path,
         device=device,
-        frames=frames,
         *args,
         **kwargs
     )
@@ -61,7 +59,7 @@ def train_dqn(
         agent=agent
     )
 
-    loop.run(config.frames)
+    loop.run(config.epochs)
 
     print("Saving checkpoint and memory...")
     agent.save(config.checkpoint_path)
@@ -123,3 +121,14 @@ def train_diffusion(
     print("Saving checkpoint...")
     model.save_checkpoint(config.checkpoint_path)
     print("Checkpoint saved!")
+
+
+def train(
+        model: str,
+        *args,
+        **kwargs,
+) -> None:
+    if model in ["dqn", "rl"]:
+        train_dqn(*args, **kwargs)
+    elif model in ["diffusion"]:
+        train_diffusion(*args, **kwargs)

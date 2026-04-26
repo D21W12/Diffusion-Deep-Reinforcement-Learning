@@ -10,3 +10,6 @@
 [submodule "submodules/diffusion"]
 	path = submodules/diffusion
 	url = https://github.com/hojonathanho/diffusion.git
+[submodule "submodules/edm"]
+	path = submodules/edm
+	url = https://github.com/NVlabs/edm.git

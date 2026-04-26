@@ -1,21 +1,13 @@
 from dataclasses import dataclass, field
 
-
 @dataclass
-class Config:
-    checkpoint_path: str
+class DQNConfig:
     device: str
-    lr: int
-    batch_size: int
-
-
-@dataclass
-class DQNConfig(Config):
+    checkpoint_path: str
     memory_checkpoint_path: str
-    frames: int
-    model: str = str
-    batch_size: int = 32
+    epochs: int
     lr: float = 2.5e-4
+    batch_size: int = 32
     discount: int = 0.99
     replay_size: int = 500_000
     environment: str = "ALE/Breakout-v5"
@@ -25,7 +17,9 @@ class DQNConfig(Config):
 
 
 @dataclass
-class DiffusionConfig(Config):
+class DiffusionConfig:
+    device: str
+    checkpoint_path: str
     data_path: str
     epochs: int
     network: str

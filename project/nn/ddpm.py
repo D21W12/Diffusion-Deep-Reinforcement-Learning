@@ -88,6 +88,7 @@ class Upsample(nn.Module):
         return y
 
 
+# TODO: fix attention
 class Attention(nn.Module):
 
     def __init__(
