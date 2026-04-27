@@ -6,7 +6,7 @@ class DQNConfig:
     checkpoint_path: str
     memory_checkpoint_path: str
     epochs: int
-    lr: float = 2.5e-4
+    lr: float = 1e-3
     batch_size: int = 32
     discount: int = 0.99
     replay_size: int = 500_000

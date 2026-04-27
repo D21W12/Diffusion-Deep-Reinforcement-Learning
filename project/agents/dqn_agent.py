@@ -51,12 +51,6 @@ class DQNAgent(Agent):
         self._target_dqn = DQNRedKnight(n_actions=n_actions).to(self._device)
         self._target_dqn.load_state_dict(self._dqn.state_dict())
 
-        # self._optimizer = RMSprop(
-        #     params=self._dqn.parameters(),
-        #     lr=lr,
-        #     momentum=0.95,
-        #     eps=0.01,
-        # )
         self._optimizer = AdamW(
             params=self._dqn.parameters(),
             lr=lr,
