@@ -3,7 +3,7 @@ import torch
 from torch.optim import Adam
 from tqdm import tqdm, trange
 
-from ..nn import DDPMUNet, EDM2UNet
+from ..nn import UNetEvelynn, EDM2UNet
 
 
 class EDMEvelynn:
@@ -56,7 +56,7 @@ class EDMEvelynn:
                 attn_resolutions=attention_resolutions,
             )
         elif network == "ddpm":
-            self._score_network = DDPMUNet(
+            self._score_network = UNetEvelynn(
                 resolution=img_resolution,
                 in_channels=img_channels,
                 start_channels=start_channels,

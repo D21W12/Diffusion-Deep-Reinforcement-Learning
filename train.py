@@ -8,11 +8,11 @@ from project.environments import BaseWrapper
 from project.agents import DQNAgent, DDQNAgent
 from project.environments.loops import TrainingLoop
 
-PATH_CHECKPOINT = os.path.join("checkpoints", "model-24032026rms.pth")
-PATH_MEMORY = os.path.join("checkpoints", "memory-24032026rms.pth")
+PATH_CHECKPOINT = os.path.join("checkpoints", "dqn", "dqn-1e3-adamw.pth")
+PATH_MEMORY = os.path.join("checkpoints", "dqn", "memory-1e3-adamw.pth")
 
-FRAMES = 500_000
-LR = 2.5e-4
+FRAMES = 5_000_000
+LR = 1e-3
 DISCOUNT = 0.99
 REPLAY_SIZE = 500_000
 ENVIRONMENT = "ALE/Breakout-v5"
