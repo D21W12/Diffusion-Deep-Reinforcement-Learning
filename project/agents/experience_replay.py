@@ -46,7 +46,7 @@ class ReplayMemory:
             self._a[sample_idx],
             self._r[sample_idx],
             # self._s_prime[sample_idx],
-            self._s[sample_idx + 1 % self._N],
+            self._s[(sample_idx + 1) % self._N],
             self._t[sample_idx]
         )
 
@@ -60,7 +60,7 @@ class ReplayMemory:
         self._a[self._i] = a
         self._r[self._i] = r
         # self._s_prime[self._i] = s_prime
-        self._s[self._i + 1 % self._N] = s_prime
+        self._s[(self._i + 1) % self._N] = s_prime
         self._t[self._i] = t
 
         self._increment_i()

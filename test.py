@@ -8,7 +8,7 @@ from project.agents import DDQNAgent, DQNAgent
 from project.environments import BaseWrapper
 from project.environments.loops import TestingLoop
 
-PATH_CHECKPOINT = os.path.join("checkpoints", "model-22032026.pth")
+PATH_CHECKPOINT = os.path.join("checkpoints", "dqn", "AdamW25e5.pt")
 ENVIRONMENT = "ALE/Breakout-v5"
 
 
