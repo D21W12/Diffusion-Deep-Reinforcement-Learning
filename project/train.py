@@ -11,7 +11,7 @@ def main():
         epilog='That are all commands >.<'
     )
 
-    parser.add_argument('-c', '--checkpoint')
+    parser.add_argument('-c', '--checkpoint', required=True)
 
     parser.add_argument('-d', '--device', default='cpu')
     parser.add_argument('-m', '--model', required=True)
@@ -20,7 +20,7 @@ def main():
     parser.add_argument('-b', '--batch')
     parser.add_argument('-e', '--epochs', required=True, type=int)
 
-    parser.add_argument('--memory')
+    parser.add_argument('--memory', required=True)
 
     args = parser.parse_args()
 
