@@ -12,15 +12,10 @@ ENVIRONMENT = "ALE/Breakout-v5"
 
 def manual_eval_dqn(
         checkpoint_path: str,
+        device: str,
 ) -> None:
     gym.register_envs(ale_py)
 
-
-    device = "cpu"
-    if torch.mps.is_available():
-        device = "mps"
-    elif torch.cuda.is_available():
-        device = "cuda"
     print(f"Using: {device}")
 
     env = BaseWrapper.create_environment(ENVIRONMENT, render_mode="human")
@@ -41,16 +36,11 @@ def manual_eval_dqn(
 def empirical_eval_dqn(
         checkpoint_path: str,
         output_path: str,
+        device: str,
         episodes: int,
 ) -> None:
     gym.register_envs(ale_py)
 
-
-    device = "cpu"
-    if torch.mps.is_available():
-        device = "mps"
-    elif torch.cuda.is_available():
-        device = "cuda"
     print(f"Using: {device}")
 
     env = BaseWrapper.create_environment(ENVIRONMENT)

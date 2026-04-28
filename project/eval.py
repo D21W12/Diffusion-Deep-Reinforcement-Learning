@@ -11,7 +11,7 @@ def main():
     )
 
     parser.add_argument('-c', '--checkpoint', required=True)
-    parser.add_argument('-o', '--output', required=True)
+    parser.add_argument('-o', '--output')
 
     parser.add_argument('-d', '--device', default='cpu')
 
@@ -21,12 +21,13 @@ def main():
     args = parser.parse_args()
 
     kwargs = {
-        "model": args.model,
         "episodes": args.episodes,
         "device": args.device,
         "checkpoint_path": args.checkpoint,
-        "output_path": args.path
+        "output_path": args.output,
+        "manual": args.manual
     }
+    if args.episodes: kwargs["episodes"] = args.episodes
 
     evaluate(**kwargs)
 
