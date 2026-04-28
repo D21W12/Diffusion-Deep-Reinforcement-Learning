@@ -21,12 +21,11 @@ def main():
     args = parser.parse_args()
 
     kwargs = {
-        "episodes": args.episodes,
         "device": args.device,
         "checkpoint_path": args.checkpoint,
-        "output_path": args.output,
         "manual": args.manual
     }
+    if args.output is not None: kwargs["output_path"] = args.output
     if args.episodes is not None: kwargs["episodes"] = args.episodes
 
     evaluate(**kwargs)
