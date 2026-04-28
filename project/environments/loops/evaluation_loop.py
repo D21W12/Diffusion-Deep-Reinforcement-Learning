@@ -1,4 +1,5 @@
 import gymnasium as gym
+from tqdm import tqdm
 
 from .base_loop import Loop
 from ...agents import Agent
@@ -24,6 +25,8 @@ class EvaluationLoop(Loop):
         t = 0
         n = 0
 
+        progress_bar = tqdm(desc="Episodes", total=episodes)
+
         while n < episodes:
             a = self._agent.select_action(s=s)
             s_prime, r, terminated, truncated, _ = self._env.step(a)
@@ -42,6 +45,8 @@ class EvaluationLoop(Loop):
 
                 cum_reward, t, n = 0, 0, n + 1
                 s, info = self._env.reset()
+
+                progress_bar.update(1)
 
             else:
                 s = s_prime
