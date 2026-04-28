@@ -27,7 +27,7 @@ def main():
         "output_path": args.output,
         "manual": args.manual
     }
-    if args.episodes: kwargs["episodes"] = args.episodes
+    if args.episodes is not None: kwargs["episodes"] = args.episodes
 
     evaluate(**kwargs)
 
