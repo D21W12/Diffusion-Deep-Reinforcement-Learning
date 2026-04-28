@@ -12,15 +12,15 @@ class ReplayMemory:
         self._obs_shape = None
         self._memory_is_init = False
 
-        self._N = N
-        self._i = 0  # Pointer to the last saved experience
+        self._N = N + 1  # Make up for the fact that the memory add the pointer can never be sampled.
+        self._i = 0  # Pointer to the position where the next experience should be saved
         self._full = False
 
         # Experience buffers
         self._s = None
         self._a = None
         self._r = None
-        self._s_prime = None
+        # self._s_prime = None
         self._t = None
 
     def sample(self, n) -> tuple[Tensor, Tensor, Tensor, Tensor, Tensor]:
@@ -31,14 +31,22 @@ class ReplayMemory:
         if self._empty():
             raise EmptyBufferError("Can not sample a buffer that does not contain any experiences!")
 
+        # Computing the sample indices
         size = self._N if self._full else self._i
-        sample_idx = torch.randint(0, size, size=(n,))
+
+        # If the memory is full, we don't want to include the experience at i, since this if overwritten by an s_prime.
+        if self._full:
+            sample_idx = torch.randint(0, size - 1, size=(n,))
+            sample_idx = (self._i + sample_idx + 1) % self._N
+        else:  # Otherwise we can just sample everything
+            sample_idx = torch.randint(0, size, size=(n,))
 
         return (
             self._s[sample_idx],
             self._a[sample_idx],
             self._r[sample_idx],
-            self._s_prime[sample_idx],
+            # self._s_prime[sample_idx],
+            self._s[sample_idx + 1 % self._N],
             self._t[sample_idx]
         )
 
@@ -51,7 +59,8 @@ class ReplayMemory:
         self._s[self._i] = s
         self._a[self._i] = a
         self._r[self._i] = r
-        self._s_prime[self._i] = s_prime
+        # self._s_prime[self._i] = s_prime
+        self._s[self._i + 1 % self._N] = s_prime
         self._t[self._i] = t
 
         self._increment_i()
@@ -77,7 +86,7 @@ class ReplayMemory:
             self._s = torch.zeros(size=(self._N,) + obs_shape, dtype=torch.uint8)
             self._a = torch.zeros(size=(self._N,), dtype=torch.int)
             self._r = torch.zeros(size=(self._N,), dtype=torch.float)
-            self._s_prime = torch.zeros(size=(self._N,) + obs_shape, dtype=torch.uint8)
+            # self._s_prime = torch.zeros(size=(self._N,) + obs_shape, dtype=torch.uint8)
             self._t = torch.zeros(size=(self._N,), dtype=torch.bool)
 
         self._memory_is_init = True
@@ -94,7 +103,7 @@ class ReplayMemory:
             "s": self._s,
             "a": self._a,
             "r": self._r,
-            "s_prime": self._s_prime,
+            # "s_prime": self._s_prime,
             "t": self._t
         }
 
@@ -106,7 +115,7 @@ class ReplayMemory:
         self._s = state_dict["s"]
         self._a = state_dict["a"]
         self._r = state_dict["r"]
-        self._s_prime = state_dict["s_prime"]
+        # self._s_prime = state_dict["s_prime"]
         self._t = state_dict["t"]
 
         self._init_memory(empty=False)
