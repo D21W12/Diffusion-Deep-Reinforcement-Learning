@@ -5,7 +5,7 @@ import torch
 from project.agents import DQNAgent
 from project.environments import BaseWrapper
 from project.environments.loops import EvaluationLoop, TestingLoop
-from project.evaluation import Evaluator
+from project.util.evaluator import Evaluator
 
 ENVIRONMENT = "ALE/Breakout-v5"
 

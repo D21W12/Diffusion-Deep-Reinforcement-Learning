@@ -3,7 +3,7 @@ from tqdm import tqdm
 
 from .base_loop import Loop
 from ...agents import Agent
-from project.evaluation import Evaluator
+from project.util.evaluator import Evaluator
 
 
 class EvaluationLoop(Loop):
