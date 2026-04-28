@@ -4,3 +4,4 @@ gymnasium[atari]
 matplotlib
 tqdm
 notebook
+pandas

@@ -185,7 +185,7 @@ class DQNAgent(Agent):
     def save_memory(self, f):
         self._memory.save(f)
 
-    def load(self, f):
+    def load(self, f) -> 'DQNAgent':
         data = torch.load(f, weights_only=False)
 
         self._epsilon = data['epsilon']
@@ -193,6 +193,8 @@ class DQNAgent(Agent):
 
         self._dqn.load_state_dict(data['dqn_state_dict'])
         self._target_dqn.load_state_dict(data['target_dqn_state_dict'])
+
+        return self
 
     def load_memory(self, f):
         if not self._train:
