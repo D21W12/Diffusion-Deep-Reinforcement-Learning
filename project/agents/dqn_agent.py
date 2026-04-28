@@ -186,7 +186,7 @@ class DQNAgent(Agent):
         self._memory.save(f)
 
     def load(self, f) -> 'DQNAgent':
-        data = torch.load(f, weights_only=False)
+        data = torch.load(f, weights_only=False, map_location=self._device)
 
         self._epsilon = data['epsilon']
         self._steps = data['steps']
