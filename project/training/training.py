@@ -11,6 +11,7 @@ from project.agents import DQNAgent
 from project.environments.loops import TrainingLoop
 from project.models import EDMEvelynn
 from project.training.config import DQNConfig, DiffusionConfig
+from project.util.data import ReplayMemoryData
 
 
 def train_dqn(
@@ -88,12 +89,11 @@ def train_diffusion(
     )
 
     transform = transforms.Compose([
-        transforms.ToTensor(),
         transforms.Normalize(0.5, 0.5)
     ])
 
-    data = datasets.ImageFolder(
-        root=config.data_path,
+    data = ReplayMemoryData(
+        memory=config.data_path,
         transform=transform,
     )
     loader = DataLoader(data, batch_size=config.batch_size, shuffle=True)
@@ -130,5 +130,5 @@ def train(
 ) -> None:
     if model in ["dqn", "rl"]:
         train_dqn(*args, **kwargs)
-    elif model in ["diffusion"]:
+    elif model in ["diffusion", "diff"]:
         train_diffusion(*args, **kwargs)
