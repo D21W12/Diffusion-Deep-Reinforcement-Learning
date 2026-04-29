@@ -12,3 +12,11 @@ class PermuteChannels:
 
     def __call__(self, x: torch.Tensor) -> torch.Tensor:
         return x.permute(*self._permutation)
+
+
+class CastTo:
+    def __init__(self, dtype) -> None:
+        self._dtype = dtype
+
+    def __call__(self, x: torch.Tensor) -> torch.Tensor:
+        return x.to(self._dtype)

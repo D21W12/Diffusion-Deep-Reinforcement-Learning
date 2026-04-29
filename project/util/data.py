@@ -12,21 +12,26 @@ class ReplayMemoryData(Dataset):
             self,
             memory: str,
             transform,
+            cap: int | None = None,
+            device: str = "cpu",
             *args,
             **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
 
-        state_dict = torch.load(memory)
+        state_dict = torch.load(memory, map_location=device)
 
         full = state_dict["full"]
         images = state_dict["s"]
         if not full:
             i = state_dict["i"]
             images = images[:i]
+        if cap:
+            images = images[-cap:]
 
         self._images = images
         self._transform = transform
+        self._device = device
 
     def __len__(self):
         return self._images.shape[0]
@@ -36,6 +41,11 @@ class ReplayMemoryData(Dataset):
         if self._transform:
             image = self._transform(image)
         return image
+
+    def to(self, device: str) -> 'ReplayMemoryData':
+        self._images = self._images.to(device)
+        self._device = device
+        return self
 
 
 class Sprites(Dataset):
