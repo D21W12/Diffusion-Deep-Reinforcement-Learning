@@ -1,6 +1,7 @@
 torch
 torchvision
 gymnasium[atari]
+gymnasium[other]
 matplotlib
 tqdm
 notebook
