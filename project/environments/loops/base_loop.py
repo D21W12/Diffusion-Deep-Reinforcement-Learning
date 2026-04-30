@@ -19,5 +19,5 @@ class Loop(ABC):
         self._agent = agent
 
     @abstractmethod
-    def run(self):
+    def run(self, *args, **kwargs):
         pass

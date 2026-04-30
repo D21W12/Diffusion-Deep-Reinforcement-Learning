@@ -3,7 +3,6 @@ import os
 import ale_py
 import gymnasium as gym
 from torch.utils.data import DataLoader
-from torchvision import datasets
 from torchvision.transforms import transforms
 
 from project.environments import BaseWrapper
@@ -29,6 +28,12 @@ def train_dqn(
         *args,
         **kwargs
     )
+
+    def checkpoint():
+        print("Saving checkpoint and memory...")
+        agent.save(config.checkpoint_path)
+        agent.save_memory(config.memory_checkpoint_path)
+        print("Saved checkpoint and memory!")
 
     gym.register_envs(ale_py)
 
@@ -60,12 +65,13 @@ def train_dqn(
         agent=agent
     )
 
-    loop.run(config.epochs)
+    loop.run(
+        frames=config.epochs,
+        checkpoint=config.checkpoint,
+        checkpoint_callback=checkpoint(),
+    )
 
-    print("Saving checkpoint and memory...")
-    agent.save(config.checkpoint_path)
-    agent.save_memory(config.memory_checkpoint_path)
-    print("Saved checkpoint and memory!")
+    checkpoint()
 
 
 def train_diffusion(

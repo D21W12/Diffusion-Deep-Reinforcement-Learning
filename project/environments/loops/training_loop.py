@@ -1,3 +1,5 @@
+from typing import Callable
+
 import gymnasium as gym
 
 from tqdm import tqdm
@@ -15,11 +17,16 @@ class TrainingLoop(Loop):
     ) -> None:
         super().__init__(env=env, agent=agent)
 
-    def run(self, frames: int):
+    def run(
+            self,
+            frames: int,
+            checkpoint: int | None = None,
+            checkpoint_callback: Callable | None = None,
+    ):
 
         s, info = self._env.reset()
 
-        for _ in tqdm(range(frames), desc="Frames: "):
+        for step in tqdm(range(frames), desc="Frames: "):
 
             a = self._agent.select_action(s=s)
             s_prime, reward, terminated, truncated, info = self._env.step(a)
@@ -29,6 +36,9 @@ class TrainingLoop(Loop):
             self._agent.update()
 
             s = s_prime
+
+            if checkpoint and step % checkpoint == 0:
+                checkpoint_callback()
 
             if done:
                 s, info = self._env.reset()
