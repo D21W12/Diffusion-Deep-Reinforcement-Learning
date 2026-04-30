@@ -24,8 +24,6 @@ class TrainingLoop(Loop):
             checkpoint_callback: Callable | None = None,
     ):
 
-        print(checkpoint)
-
         s, info = self._env.reset()
 
         for step in tqdm(range(frames), desc="Frames: "):
