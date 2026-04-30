@@ -1,10 +1,9 @@
 import random
-from typing import override
 
 import torch
 
 from torch.nn import SmoothL1Loss
-from torch.optim import Adam, AdamW, RMSprop
+from torch.optim import AdamW
 
 from .base_agent import Agent
 from .experience_replay import ReplayMemory
@@ -60,7 +59,6 @@ class DQNAgent(Agent):
         self._epsilon = 1
         self._steps = 0
 
-    @override
     def select_action(self, s) -> int:
 
         # With chance e select a random action (during training)
@@ -72,7 +70,6 @@ class DQNAgent(Agent):
             q_values = self._dqn(s.unsqueeze(0))
         return q_values.argmax().item()
 
-    @override
     def observe(self, s, a, r, s_prime, t) -> None:
 
         if not self._train:
@@ -90,7 +87,6 @@ class DQNAgent(Agent):
 
         self._update_epsilon()
 
-    @override
     def update(self) -> None:
 
         # Check whether agent is in train mode
