@@ -11,8 +11,10 @@ def main():
         epilog='That are all commands >.<'
     )
 
+    parser.add_argument('-s', '--seed', type=int)
+
     parser.add_argument('-c', '--checkpoint', required=True, type=str)
-    parser.add_argument('--checkpoint_interval', type=int)
+    parser.add_argument('-i', '--interval', type=int)
 
     parser.add_argument('-d', '--device', default='cpu')
     parser.add_argument('-m', '--model', required=True)
@@ -34,6 +36,7 @@ def main():
     if args.lr: kwargs["lr"] = args.lr
     if args.batch: kwargs["batch_size"] = args.batch
     if args.memory: kwargs["memory_checkpoint_path"] = args.memory
+    if args.interval: kwargs["checkpoint"] = args.interval
 
     train(**kwargs)
 

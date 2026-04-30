@@ -24,6 +24,8 @@ class TrainingLoop(Loop):
             checkpoint_callback: Callable | None = None,
     ):
 
+        print(checkpoint)
+
         s, info = self._env.reset()
 
         for step in tqdm(range(frames), desc="Frames: "):
@@ -37,7 +39,7 @@ class TrainingLoop(Loop):
 
             s = s_prime
 
-            if checkpoint and step % checkpoint == 0:
+            if (checkpoint is not None) and ((step + 1) % checkpoint == 0):
                 checkpoint_callback()
 
             if done:

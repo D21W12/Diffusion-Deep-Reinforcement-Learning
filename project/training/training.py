@@ -68,7 +68,7 @@ def train_dqn(
     loop.run(
         frames=config.epochs,
         checkpoint=config.checkpoint,
-        checkpoint_callback=checkpoint(),
+        checkpoint_callback=checkpoint,
     )
 
     checkpoint()
