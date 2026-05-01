@@ -30,6 +30,8 @@ class DQNAgent(Agent):
 
         super().__init__(n_actions)
 
+        print(lr)
+
         self._device = device
 
         self._train = train

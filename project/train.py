@@ -11,15 +11,13 @@ def main():
         epilog='That are all commands >.<'
     )
 
-    parser.add_argument('-s', '--seed', type=int)
-
     parser.add_argument('-c', '--checkpoint', required=True, type=str)
     parser.add_argument('-i', '--interval', type=int)
 
     parser.add_argument('-d', '--device', default='cpu')
     parser.add_argument('-m', '--model', required=True)
 
-    parser.add_argument('--lr')
+    parser.add_argument('--lr', type=float)
     parser.add_argument('-b', '--batch')
     parser.add_argument('-e', '--epochs', required=True, type=int)
 
