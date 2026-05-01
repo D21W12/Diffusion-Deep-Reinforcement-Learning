@@ -18,7 +18,6 @@ class TestingLoop(Loop):
         while True:
             a = self._agent.select_action(s=s)
             s_prime, r, terminated, truncated, _ = self._env.step(a)
-            if r != 0: print(r)
             done = terminated or truncated
 
             if done:

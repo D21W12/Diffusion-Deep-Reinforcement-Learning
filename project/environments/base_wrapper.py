@@ -30,7 +30,7 @@ class BaseWrapper(gym.Wrapper):
         s, r, e, t, i = super().step(a)
         return (
             self._transform_observation(s),
-            r,
+            self._transform_reward(r),
             e,
             t,
             i
@@ -39,6 +39,9 @@ class BaseWrapper(gym.Wrapper):
     def reset(self, *args, **kwargs):
         s, i = super().reset(*args, **kwargs)
         return self._transform_observation(s), i
+
+    def _transform_reward(self, r: float) -> float:
+        return np.sign(r)
 
     def _transform_observation(self, s: np.ndarray) -> Tensor:
         return torch.from_numpy(s).to(torch.uint8)
@@ -49,11 +52,10 @@ class BaseWrapper(gym.Wrapper):
     ) -> gym.Env:
         env = gym.wrappers.AtariPreprocessing(env)
         env = gym.wrappers.FrameStackObservation(env, stack_size=4)
-        env = gym.wrappers.ClipReward(env, -1, 1)
         return env
 
     @classmethod
     def create_environment(cls, id, render_mode: str | None = None):
-        env = gym.make(id, render_mode=render_mode, frameskip=1, repeat_action_probability=0)
+        env = gym.make(id, render_mode=render_mode, frameskip=1, repeat_action_probability=0.)
         env = cls(env)
         return env
