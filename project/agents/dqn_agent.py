@@ -148,7 +148,7 @@ class DQNAgent(Agent):
         - Annealed linearly from 1 to 0.1 over 1 million updates.
         - Clipped at 0.1
         """
-        if self._replay_start_size < self._learning_steps < self._final_exploration_frame:
+        if self._replay_start_size < self._steps < self._final_exploration_frame:
             self._epsilon -= 0.9 / self._final_exploration_frame
         elif self._learning_steps > self._final_exploration_frame:
             self._epsilon = 0.1
@@ -189,6 +189,8 @@ class DQNAgent(Agent):
 
         self._dqn.load_state_dict(data['dqn_state_dict'])
         self._target_dqn.load_state_dict(data['target_dqn_state_dict'])
+
+        self._optimizer.load_state_dict(data['optimizer_state_dict'])
 
         return self
 

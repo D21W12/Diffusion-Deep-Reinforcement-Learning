@@ -49,10 +49,11 @@ class BaseWrapper(gym.Wrapper):
     ) -> gym.Env:
         env = gym.wrappers.AtariPreprocessing(env)
         env = gym.wrappers.FrameStackObservation(env, stack_size=4)
+        env = gym.wrappers.ClipReward(env, -1, 1)
         return env
 
     @classmethod
     def create_environment(cls, id, render_mode: str | None = None):
-        env = gym.make(id, render_mode=render_mode, frameskip=1)
+        env = gym.make(id, render_mode=render_mode, frameskip=1, repeat_action_probability=0)
         env = cls(env)
         return env
