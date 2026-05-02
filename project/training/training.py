@@ -9,7 +9,7 @@ from project.environments import BaseWrapper
 from project.agents import DQNAgent
 from project.environments.loops import TrainingLoop
 from project.models import EDMEvelynn
-from project.training.config import DQNConfig, DiffusionConfig
+from project.training.config import DQNTrainingConfig, DiffTrainingConfig
 from project.util.data import ReplayMemoryData
 
 
@@ -21,7 +21,7 @@ def train_dqn(
         **kwargs,
 ) -> None:
 
-    config = DQNConfig(
+    config = DQNTrainingConfig(
         checkpoint_path=checkpoint_path,
         memory_checkpoint_path=memory_checkpoint_path,
         device=device,
@@ -78,8 +78,8 @@ def train_dqn(
 
 
 def train_diffusion(
-        data_path: str,
         checkpoint_path: str,
+        memory_checkpoint_path: str,
         device: str,
         epochs: int,
         network: str,
@@ -87,9 +87,9 @@ def train_diffusion(
         **kwargs,
 ) -> None:
 
-    config = DiffusionConfig(
+    config = DiffTrainingConfig(
         checkpoint_path=checkpoint_path,
-        data_path=data_path,
+        data_path=memory_checkpoint_path,
         device=device,
         epochs=epochs,
         network=network,
@@ -123,13 +123,13 @@ def train_diffusion(
 
     if os.path.exists(config.checkpoint_path):
         print("Loading checkpoint...")
-        model.load_checkpoint(config.checkpoint_path)
+        model.load(config.checkpoint_path)
         print("Loaded checkpoint!")
 
     model.train(config.epochs, loader)
 
     print("Saving checkpoint...")
-    model.save_checkpoint(config.checkpoint_path)
+    model.save(config.checkpoint_path)
     print("Checkpoint saved!")
 
 

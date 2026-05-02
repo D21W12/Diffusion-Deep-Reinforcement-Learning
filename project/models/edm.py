@@ -230,14 +230,14 @@ class EDMEvelynn:
         self._device = device
         return self
 
-    def save_checkpoint(self, f) -> None:
+    def save(self, f) -> None:
         torch.save({
             'score_network_state_dict': self._score_network.state_dict(),
             'optimizer_state_dict': self._optimizer.state_dict(),
-            'epochs': self._epochs
+            'epochs': self._epochs,
         }, f)
 
-    def load_checkpoint(self, f) -> None:
+    def load(self, f) -> None:
 
         data = torch.load(f, map_location=self._device)
 
