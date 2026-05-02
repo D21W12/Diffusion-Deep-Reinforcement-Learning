@@ -15,8 +15,8 @@ from project.util.data import ReplayMemoryData
 
 def train_dqn(
         checkpoint_path: str,
-        memory_checkpoint_path: str,
         device: str,
+        memory_checkpoint_path: str | None = None,
         *args,
         **kwargs,
 ) -> None:
@@ -30,10 +30,13 @@ def train_dqn(
     )
 
     def checkpoint():
-        print("Saving checkpoint and memory...")
+        print("Saving checkpoint...")
         agent.save(config.checkpoint_path)
-        agent.save_memory(config.memory_checkpoint_path)
-        print("Saved checkpoint and memory!")
+        print("Saved checkpoint!")
+        if memory_checkpoint_path is not None:
+            print("Saving memory...")
+            agent.save_memory(config.memory_checkpoint_path)
+            print("Saved memory!")
 
     gym.register_envs(ale_py)
 
@@ -55,7 +58,7 @@ def train_dqn(
         print("Loading existing checkpoint...")
         agent.load(config.checkpoint_path)
         print("Loaded existing checkpoint!")
-    if os.path.exists(config.memory_checkpoint_path):
+    if memory_checkpoint_path and os.path.exists(config.memory_checkpoint_path):
         print("Loading existing memory...")
         agent.load_memory(config.memory_checkpoint_path)
         print("Loaded existing memory!")

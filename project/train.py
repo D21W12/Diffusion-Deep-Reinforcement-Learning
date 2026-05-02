@@ -21,7 +21,7 @@ def main():
     parser.add_argument('-b', '--batch')
     parser.add_argument('-e', '--epochs', required=True, type=int)
 
-    parser.add_argument('--memory', required=True)
+    parser.add_argument('--memory')
 
     args = parser.parse_args()
 
