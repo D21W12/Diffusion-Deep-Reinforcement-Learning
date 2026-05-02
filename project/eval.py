@@ -14,19 +14,21 @@ def main():
     parser.add_argument('-o', '--output')
 
     parser.add_argument('-d', '--device', default='cpu')
+    parser.add_argument('-m', '--model', required=True)
 
-    parser.add_argument('-e', '--episodes', type=int)
-    parser.add_argument("-m", "--manual", action='store_true')
+    parser.add_argument('-n', '--number', type=int)
+    parser.add_argument("--manual", action='store_true')
 
     args = parser.parse_args()
 
     kwargs = {
+        "model": args.model,
         "device": args.device,
         "checkpoint_path": args.checkpoint,
         "manual": args.manual
     }
     if args.output is not None: kwargs["output_path"] = args.output
-    if args.episodes is not None: kwargs["episodes"] = args.episodes
+    if args.number is not None: kwargs["number"] = args.number
 
     evaluate(**kwargs)
 

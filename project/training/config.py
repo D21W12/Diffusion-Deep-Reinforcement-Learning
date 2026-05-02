@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 
 @dataclass
-class DQNConfig:
+class DQNTrainingConfig:
     device: str
     checkpoint_path: str
     memory_checkpoint_path: str
@@ -18,7 +18,7 @@ class DQNConfig:
 
 
 @dataclass
-class DiffusionConfig:
+class DiffTrainingConfig:
     device: str
     checkpoint_path: str
     data_path: str
