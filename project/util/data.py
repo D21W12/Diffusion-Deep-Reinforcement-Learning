@@ -30,7 +30,7 @@ class ReplayMemoryData(Dataset):
         if cap:
             images = images[-cap:]
 
-        self._images = images
+        self._images = images.permute(0, 2, 3, 1).numpy()
         self._transform = transform
         self._device = device
 

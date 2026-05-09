@@ -21,20 +21,18 @@ def train_diffusion(
     config = DiffTrainingConfig()
 
     transform = transforms.Compose([
-        ToFloat(),
+        transforms.ToTensor(),
         transforms.Normalize(0.5, 0.5),
-        transforms.Pad(2)
     ])
 
     print("Loading data...")
     data = ReplayMemoryData(
         memory=memory_checkpoint_path,
         transform=transform,
+        cap=1_000
     )
     loader = DataLoader(data, batch_size=config.batch_size, shuffle=True)
     print(f"Loaded data!")
-
-    sleep(20)
 
     print("Initializing model...")
     model = EDMEvelynn(
@@ -55,9 +53,6 @@ def train_diffusion(
         model.load(checkpoint_path)
         print("Loaded checkpoint!")
     print("Initialized model!")
-
-    sleep(20)
-
     model.train(epochs, loader)
 
     print("Saving checkpoint...")
