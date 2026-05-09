@@ -34,7 +34,7 @@ class ReplayMemoryData(Dataset):
         images = images.permute(0, 2, 3, 1).numpy()
 
         if transform_on_load:
-            images = transform(images)
+            images = torch.stack([transform(image) for image in images])
 
         self._images = images
         self._transform = transform
