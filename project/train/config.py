@@ -20,7 +20,7 @@ class DQNTrainingConfig:
 @dataclass
 class DiffTrainingConfig:
     network: str = 'edm2'
-    batch_size: int = 512
+    batch_size: int = 64
     lr: float = 2e-3
     resolution: int = 88
     in_channels: int = 4
