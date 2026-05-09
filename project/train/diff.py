@@ -29,7 +29,7 @@ def train_diffusion(
     data = ReplayMemoryData(
         memory=memory_checkpoint_path,
         transform=transform,
-    ).to(device)
+    )
     loader = DataLoader(data, batch_size=config.batch_size, shuffle=True)
     print("Loaded data!")
 

@@ -182,7 +182,7 @@ class EDMEvelynn:
 
         desc = f"Epoch {self._epochs + 1}"
         for batch in tqdm(dataloader, desc=desc):
-            loss += self._run_batch(batch)
+            loss += self._run_batch(batch.to(self._device))
 
         self._epochs += 1
 
