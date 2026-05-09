@@ -53,8 +53,6 @@ def main():
 
     parser.add_argument('-d', '--device', default='cpu')
 
-    parser.add_argument('-n', '--number', type=int)
-
     args = parser.parse_args()
 
     evaluate(
