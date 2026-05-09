@@ -186,7 +186,7 @@ class EDMEvelynn:
 
         self._epochs += 1
 
-        if print_loss: print(f"Loss: {loss / len(dataloader):.5f}")
+        if print_loss: print(f"Loss: {loss / len(dataloader.dataset):.5f}")
 
     def train(
             self,
