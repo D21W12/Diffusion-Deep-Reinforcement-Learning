@@ -14,6 +14,7 @@ class ReplayMemoryData(Dataset):
             transform,
             cap: int | None = None,
             device: str = "cpu",
+            transform_on_load: bool = False,
             *args,
             **kwargs,
     ) -> None:
@@ -28,9 +29,12 @@ class ReplayMemoryData(Dataset):
             images = images[:i]
         if cap:
             images = images[-cap:]
+        if transform_on_load
+            images = transform(images)
 
         self._images = images.permute(0, 2, 3, 1).numpy()
         self._transform = transform
+        self._transform_on_load = transform_on_load
         self._device = device
 
     def __len__(self):
@@ -38,7 +42,7 @@ class ReplayMemoryData(Dataset):
 
     def __getitem__(self, item):
         image = self._images[item]
-        if self._transform:
+        if self._transform and not self._transform_on_load:
             image = self._transform(image)
         return image
 
