@@ -19,10 +19,6 @@ class DQNTrainingConfig:
 
 @dataclass
 class DiffTrainingConfig:
-    device: str
-    checkpoint_path: str
-    data_path: str
-    epochs: int
     network: str = 'edm2'
     batch_size: int = 512
     lr: float = 2e-3

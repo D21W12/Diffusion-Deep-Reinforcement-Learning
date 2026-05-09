@@ -16,12 +16,7 @@ def train_diffusion(
         epochs: int,
 ) -> None:
 
-    config = DiffTrainingConfig(
-        checkpoint_path=checkpoint_path,
-        data_path=memory_checkpoint_path,
-        device=device,
-        epochs=epochs,
-    )
+    config = DiffTrainingConfig()
 
     transform = transforms.Compose([
         transforms.ToTensor(),
@@ -30,9 +25,10 @@ def train_diffusion(
     ])
 
     data = ReplayMemoryData(
-        memory=config.data_path,
+        memory=memory_checkpoint_path,
         transform=transform,
-    )
+        transform_on_load=True
+    ).to(device)
     loader = DataLoader(data, batch_size=config.batch_size, shuffle=True)
 
     model = EDMEvelynn(
@@ -46,17 +42,17 @@ def train_diffusion(
         batch_size=config.batch_size,
         lr=config.lr,
         network=config.network
-    ).to(config.device)
+    ).to(device)
 
-    if os.path.exists(config.checkpoint_path):
+    if os.path.exists(checkpoint_path):
         print("Loading checkpoint...")
-        model.load(config.checkpoint_path)
+        model.load(checkpoint_path)
         print("Loaded checkpoint!")
 
-    model.train(config.epochs, loader)
+    model.train(epochs, loader)
 
     print("Saving checkpoint...")
-    model.save(config.checkpoint_path)
+    model.save(checkpoint_path)
     print("Checkpoint saved!")
 
 
@@ -78,15 +74,12 @@ def main():
 
     args = parser.parse_args()
 
-    kwargs = {
-        "model": args.model,
-        "epochs": args.epochs,
-        "device": args.device,
-        "checkpoint_path": args.checkpoint,
-        "memory_checkpoint_path": args.memory
-    }
-
-    train_diffusion(**kwargs)
+    train_diffusion(
+        checkpoint_path=args.checkpoint,
+        memory_checkpoint_path=args.memory,
+        device=args.device,
+        epochs=args.epochs
+    )
 
 if __name__ == "__main__":
     main()
