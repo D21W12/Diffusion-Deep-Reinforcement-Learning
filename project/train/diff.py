@@ -31,7 +31,7 @@ def train_diffusion(
         transform=transform,
     )
     loader = DataLoader(data, batch_size=config.batch_size, shuffle=True)
-    print("Loaded data!")
+    print(f"Loaded data! {data._images.device}")
 
     model = EDMEvelynn(
         img_resolution=config.resolution,
