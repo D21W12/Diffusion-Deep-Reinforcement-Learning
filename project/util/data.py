@@ -39,7 +39,7 @@ class ReplayMemoryData(Dataset):
 
     def __getitem__(self, item):
         image = self._images[item]
-        if self._transform and not self._transform_on_load:
+        if self._transform:
             image = self._transform(image)
         return image
 
