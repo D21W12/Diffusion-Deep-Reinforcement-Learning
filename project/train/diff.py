@@ -1,5 +1,6 @@
 import argparse
 import os
+from time import sleep
 
 from torch.utils.data import DataLoader
 from torchvision.transforms import transforms
@@ -31,8 +32,11 @@ def train_diffusion(
         transform=transform,
     )
     loader = DataLoader(data, batch_size=config.batch_size, shuffle=True)
-    print(f"Loaded data! {data._images.device}")
+    print(f"Loaded data!")
 
+    sleep(20)
+
+    print("Initializing model...")
     model = EDMEvelynn(
         img_resolution=config.resolution,
         img_channels=config.in_channels,
@@ -50,6 +54,9 @@ def train_diffusion(
         print("Loading checkpoint...")
         model.load(checkpoint_path)
         print("Loaded checkpoint!")
+    print("Initialized model!")
+
+    sleep(20)
 
     model.train(epochs, loader)
 
