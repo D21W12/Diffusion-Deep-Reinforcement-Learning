@@ -3,9 +3,7 @@ from dataclasses import dataclass, field
 
 @dataclass
 class DiffEvalConfig:
-    device: str
-    checkpoint_path: str
-    network: str
+    network: str = "edm2"
     resolution: int = 32
     in_channels: int = 3
     start_channels: int = 64
@@ -13,3 +11,8 @@ class DiffEvalConfig:
     channel_multipliers: list[int] | tuple[int] = field(default_factory=lambda: [1, 2, 2])
     attention_resolutions: list[int] | tuple[int] | set[int] = field(default_factory=lambda: [16])
     dropout: int = 0.13
+
+
+@dataclass
+class DQNEvalConfig:
+    environment: str = "ALE/Breakout-v5"

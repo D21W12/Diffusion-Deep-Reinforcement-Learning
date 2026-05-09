@@ -151,7 +151,7 @@ class EDMEvelynn:
     def _loss(D_yn, y, weights) -> torch.Tensor:
         return torch.mean(weights[:, None, None, None] * (D_yn - y) ** 2)
 
-    def _training_step(self, y: torch.Tensor):
+    def _run_batch(self, y: torch.Tensor):
 
         if self._batch_size is None:
             self._batch_size = y.shape[0]
@@ -172,7 +172,7 @@ class EDMEvelynn:
 
         return loss.item()
 
-    def _epoch(
+    def _run_epoch(
             self,
             dataloader,
             print_loss: bool = True
@@ -182,7 +182,7 @@ class EDMEvelynn:
 
         desc = f"Epoch {self._epochs + 1}"
         for batch in tqdm(dataloader, desc=desc):
-            loss += self._training_step(batch.to(self._device))
+            loss += self._run_batch(batch.to(self._device))
 
         self._epochs += 1
 
@@ -196,7 +196,7 @@ class EDMEvelynn:
     ):
         self._score_network.train()
         for epoch in range(epochs):
-            self._epoch(dataloader, print_loss=print_loss)
+            self._run_epoch(dataloader, print_loss=print_loss)
 
     def heun_sampler(self, batch_size: int = 1) -> torch.Tensor:
 

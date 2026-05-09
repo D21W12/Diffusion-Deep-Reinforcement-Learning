@@ -23,7 +23,7 @@ class DiffTrainingConfig:
     checkpoint_path: str
     data_path: str
     epochs: int
-    network: str
+    network: str = 'edm2'
     batch_size: int = 64
     lr: float = 2e-3
     resolution: int = 32

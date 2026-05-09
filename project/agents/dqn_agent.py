@@ -3,13 +3,14 @@ import random
 import torch
 
 from torch.nn import SmoothL1Loss
-from torch.optim import AdamW
+from torch.optim import AdamW, RMSprop
 
 from .base_agent import Agent
 from .experience_replay import ReplayMemory
 from ..nn import DQNRedKnight
 
 
+# TODO: fix weights and biases and original optimizer with 1M frames
 class DQNAgent(Agent):
 
     def __init__(
@@ -52,7 +53,7 @@ class DQNAgent(Agent):
         self._target_dqn = DQNRedKnight(n_actions=n_actions).to(self._device)
         self._target_dqn.load_state_dict(self._dqn.state_dict())
 
-        self._optimizer = AdamW(
+        self._optimizer = RMSprop(
             params=self._dqn.parameters(),
             lr=lr,
         )
@@ -63,7 +64,7 @@ class DQNAgent(Agent):
 
     def select_action(self, s) -> int:
 
-        # With chance e select a random action (during training)
+        # With chance e select a random action (during train)
         if self._random_action():
             return torch.randint(self._n_actions, (1,)).item()
 
