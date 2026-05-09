@@ -1,6 +1,12 @@
 import torch
 
 
+class ToFloat:
+
+    def __call__(self, x: torch.Tensor) -> torch.Tensor:
+        return x / 255
+
+
 class PermuteChannels:
     """
     Permute channel dimensions from [H, W, C] to [C, H, W].

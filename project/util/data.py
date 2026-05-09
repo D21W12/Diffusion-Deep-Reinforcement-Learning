@@ -14,7 +14,6 @@ class ReplayMemoryData(Dataset):
             transform,
             cap: int | None = None,
             device: str = "cpu",
-            transform_on_load: bool = False,
             *args,
             **kwargs,
     ) -> None:
@@ -31,14 +30,8 @@ class ReplayMemoryData(Dataset):
         if cap:
             images = images[-cap:]
 
-        images = images.permute(0, 2, 3, 1).numpy()
-
-        if transform_on_load:
-            images = torch.stack([transform(image) for image in images])
-
         self._images = images
         self._transform = transform
-        self._transform_on_load = transform_on_load
         self._device = device
 
     def __len__(self):
