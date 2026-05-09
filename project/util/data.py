@@ -24,15 +24,19 @@ class ReplayMemoryData(Dataset):
 
         full = state_dict["full"]
         images = state_dict["s"]
+
         if not full:
             i = state_dict["i"]
             images = images[:i]
         if cap:
             images = images[-cap:]
+
+        images = images.permute(0, 2, 3, 1).numpy()
+
         if transform_on_load:
             images = transform(images)
 
-        self._images = images.permute(0, 2, 3, 1).numpy()
+        self._images = images
         self._transform = transform
         self._transform_on_load = transform_on_load
         self._device = device
