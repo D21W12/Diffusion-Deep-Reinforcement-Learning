@@ -1,7 +1,9 @@
+import torch
+
 from project.models import EDMEvelynn
 
 
 class EDMMauMau(EDMEvelynn):
 
-    def sample(self):
+    def reconstruct(self, X: torch.Tensor) -> torch.Tensor:
         pass

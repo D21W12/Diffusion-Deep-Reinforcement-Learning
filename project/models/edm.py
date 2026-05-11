@@ -1,3 +1,5 @@
+import os
+
 import torch
 
 from torch.optim import Adam
@@ -16,7 +18,7 @@ class EDMEvelynn:
             start_channels: int,
             channel_mult: tuple[int] | list[int],
             num_blocks: int,
-            attention_resolutions: set[int] | tuple[int] | list[int],
+            attn_resolutions: set[int] | tuple[int] | list[int],
             dropout: float,
             batch_size: int | None = None,
             lr: float = 1e-3,
@@ -32,8 +34,12 @@ class EDMEvelynn:
 
         self._device = "cpu"
 
-        self._image_resolution = img_resolution
-        self._image_channels = img_channels
+        self._img_resolution = img_resolution
+        self._img_channels = img_channels
+        self._start_channels = start_channels
+        self._channel_mult = channel_mult,
+        self._attn_resolutions = attn_resolutions
+        self._num_blocks = num_blocks
 
         self._batch_size = batch_size
         self._epochs = 0
@@ -54,17 +60,17 @@ class EDMEvelynn:
                 model_channels=start_channels,
                 num_blocks=num_blocks,
                 channel_mult=channel_mult,
-                attn_resolutions=attention_resolutions,
+                attn_resolutions=attn_resolutions,
             )
         elif network == "ddpm":
             self._score_network = UNetEvelynn(
-                resolution=img_resolution,
-                in_channels=img_channels,
+                img_resolution=img_resolution,
+                img_channels=img_channels,
                 start_channels=start_channels,
                 out_channels=img_channels,
-                num_res_blocks=num_blocks,
-                channel_multipliers=channel_mult,
-                attention_resolutions=attention_resolutions,
+                num_blocks=num_blocks,
+                channel_mult=channel_mult,
+                attn_resolutions=attn_resolutions,
                 dropout=dropout
             )
 
@@ -209,7 +215,7 @@ class EDMEvelynn:
 
         with torch.no_grad():
 
-            x_i_shape = (batch_size, self._image_channels, self._image_resolution, self._image_resolution)
+            x_i_shape = (batch_size, self._img_channels, self._img_resolution, self._img_resolution)
             x_i = torch.randn(x_i_shape, device=self._device)
             x_i = x_i * self._sigma(self._t(0)) * self._s(self._t(0))
 
@@ -235,11 +241,22 @@ class EDMEvelynn:
         self._device = device
         return self
 
+    def config_dict(self) -> dict:
+        return {
+            "img_resolution": self._img_resolution,
+            "img_channels": self._img_channels,
+            "start_channels": self._start_channels,
+            "channel_mult": self._channel_mult,
+            "attn_resolutions": self._attn_resolutions,
+            "num_blocks": self._num_blocks
+        }
+
     def save(self, f) -> None:
         torch.save({
             'score_network_state_dict': self._score_network.state_dict(),
             'optimizer_state_dict': self._optimizer.state_dict(),
             'epochs': self._epochs,
+            'config': self.config_dict()
         }, f)
 
     def load(self, f) -> None:
