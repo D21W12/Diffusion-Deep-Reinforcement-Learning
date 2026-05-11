@@ -303,28 +303,28 @@ class UNetEvelynn(nn.Module):
 
     def __init__(
             self,
-            resolution: int,
-            in_channels: int,
+            img_resolution: int,
+            img_channels: int,
             start_channels: int,
             out_channels: int,
-            num_res_blocks: int,
-            channel_multipliers: set[int] | tuple[int],
-            attention_resolutions: set[int] | tuple[int],
+            num_blocks: int,
+            channel_mult: set[int] | tuple[int],
+            attn_resolutions: set[int] | tuple[int],
             dropout: float = 0.,
             conv_resample: bool = True
     ):
 
-        assert len(channel_multipliers) > 0
+        assert len(channel_mult) > 0
 
         super().__init__()
 
-        self._resolution = resolution
-        self._in_channels = in_channels
+        self._resolution = img_resolution
+        self._in_channels = img_channels
         self._start_channels = start_channels
         self._out_channels = out_channels
-        self._num_res_blocks = num_res_blocks
-        self._channel_multipliers = channel_multipliers
-        self._attention_resolutions = attention_resolutions
+        self._num_res_blocks = num_blocks
+        self._channel_multipliers = channel_mult
+        self._attention_resolutions = attn_resolutions
 
         # Initializing embeddings
         self._emb = nn.Sequential(
@@ -342,7 +342,7 @@ class UNetEvelynn(nn.Module):
 
         # Start convolution
         self._start = nn.Conv2d(
-            in_channels=in_channels,
+            in_channels=img_channels,
             out_channels=start_channels,
             kernel_size=3,
             padding='same',
@@ -352,11 +352,11 @@ class UNetEvelynn(nn.Module):
 
         # Initializing the encoder
         self._encoder = nn.ModuleList()
-        for i_level in range(len(channel_multipliers)):
+        for i_level in range(len(channel_mult)):
 
             encoder_block = nn.ModuleDict()
             encoder_block["residuals"] = nn.ModuleList()
-            for i_block in range(num_res_blocks):
+            for i_block in range(num_blocks):
 
                 block = nn.ModuleDict()
                 block["residual"] = ResidualBlock(
@@ -365,7 +365,7 @@ class UNetEvelynn(nn.Module):
                     dropout=0
                 )
 
-                if resolution // 2 ** i_level in attention_resolutions:
+                if img_resolution // 2 ** i_level in attn_resolutions:
                     block["attention"] = Attention(
                         num_channels=self._get_encoder_channels(i_level, i_block, attention=True)
                     )
@@ -373,7 +373,7 @@ class UNetEvelynn(nn.Module):
                 encoder_block["residuals"].append(block)
 
 
-            if i_level != len(channel_multipliers) - 1:
+            if i_level != len(channel_mult) - 1:
 
                 encoder_block["downsample"] = Downsample(
                     num_channels=self._get_encoder_channels(i_level),
@@ -401,11 +401,11 @@ class UNetEvelynn(nn.Module):
 
         # Initializing the decoder
         self._decoder = nn.ModuleList()
-        for i_level in range(len(channel_multipliers)):
+        for i_level in range(len(channel_mult)):
 
             decoder_block = nn.ModuleDict()
             decoder_block["residuals"] = nn.ModuleList()
-            for i_block in range(num_res_blocks + 1):
+            for i_block in range(num_blocks + 1):
 
                 block = nn.ModuleDict()
                 block["residual"] = ResidualBlock(
@@ -414,7 +414,7 @@ class UNetEvelynn(nn.Module):
                     dropout=dropout
                 )
 
-                if resolution // 2 ** i_level in attention_resolutions:
+                if img_resolution // 2 ** i_level in attn_resolutions:
 
                     block["attention"] = Attention(
                         num_channels=self._get_decoder_channels(i_level, i_block, attention=True)
@@ -434,11 +434,11 @@ class UNetEvelynn(nn.Module):
         self._end = nn.Sequential(
             nn.GroupNorm(
                 num_groups=32,
-                num_channels=start_channels * channel_multipliers[0]
+                num_channels=start_channels * channel_mult[0]
             ),
             nn.SiLU(),
             nn.Conv2d(
-                in_channels=start_channels * channel_multipliers[0],
+                in_channels=start_channels * channel_mult[0],
                 out_channels=out_channels,
                 kernel_size=3,
                 padding='same',
@@ -490,13 +490,13 @@ class UNetEvelynn(nn.Module):
 
 if __name__ == "__main__":
     model = UNetEvelynn(
-        resolution=32,
-        in_channels=3,
+        img_resolution=32,
+        img_channels=3,
         start_channels=128,
         out_channels=3,
-        num_res_blocks=1,
-        channel_multipliers=(2, 2, 2, 2),
-        attention_resolutions=[4],
+        num_blocks=1,
+        channel_mult=(2, 2, 2, 2),
+        attn_resolutions=[4],
     )
     x = torch.zeros((16, 3, 32, 32))
     sigmas = torch.linspace(0.2, 80, 16)

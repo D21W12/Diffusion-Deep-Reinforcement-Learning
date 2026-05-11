@@ -19,7 +19,7 @@ def evaluate(
         start_channels=config.start_channels,
         channel_mult=config.channel_multipliers,
         num_blocks=config.num_res_blocks,
-        attention_resolutions=config.attention_resolutions,
+        attn_resolutions=config.attention_resolutions,
         dropout=config.dropout,
         network=config.network,
     ).to(device)
