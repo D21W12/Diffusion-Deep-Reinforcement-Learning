@@ -5,7 +5,7 @@ class DQNTrainingConfig:
     device: str
     checkpoint_path: str
     memory_checkpoint_path: str
-    lr: float = 1e-4
+    lr: float = 2.5e-4
     batch_size: int = 32
     discount: int = 0.99
     replay_size: int = 1_000_000

@@ -57,7 +57,7 @@ class DQNAgent(Agent):
             params=self._dqn.parameters(),
             lr=lr,
             alpha=0.95,
-            momentum=0.95,
+            momentum=0.,
             eps=0.01,
             centered=True,
         )
