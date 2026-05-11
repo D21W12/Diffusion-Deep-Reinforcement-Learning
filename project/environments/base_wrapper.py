@@ -55,7 +55,7 @@ class BaseWrapper(gym.Wrapper):
         return env
 
     @classmethod
-    def create_environment(cls, id, render_mode: str | None = None):
+    def create_environment(cls, id, render_mode: str | None = None, *args, **kwargs):
         env = gym.make(id, render_mode=render_mode, frameskip=1, repeat_action_probability=0.)
-        env = cls(env)
+        env = cls(env, *args, **kwargs)
         return env
