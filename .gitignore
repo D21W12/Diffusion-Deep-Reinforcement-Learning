@@ -1,3 +1,5 @@
 .idea
 .venv
 *.pyc
+checkpoints/memory
+data/sprites
