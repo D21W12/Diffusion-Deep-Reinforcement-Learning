@@ -198,7 +198,7 @@ class EDMEvelynn:
         for epoch in range(epochs):
             self._run_epoch(dataloader, print_loss=print_loss)
 
-    def heun_sampler(self, batch_size: int = 1) -> torch.Tensor:
+    def sample(self, batch_size: int = 1) -> torch.Tensor:
 
         self._score_network.eval()
 

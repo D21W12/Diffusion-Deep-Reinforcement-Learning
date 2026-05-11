@@ -4,7 +4,7 @@ import ale_py
 import gymnasium as gym
 
 from project.agents import DQNAgent
-from project.environments import BaseWrapper
+from project.environments import BaseWrapper, NoiseWrapper
 from project.environments.loops import EvaluationLoop, TestingLoop
 from project.eval.config import DQNEvalConfig
 from project.util.evaluator import Evaluator
@@ -19,7 +19,7 @@ def manual_eval(
 
     print(f"Using: {device}")
 
-    env = BaseWrapper.create_environment(config.environment, render_mode="human")
+    env = NoiseWrapper.create_environment(config.environment, render_mode="human", std=0.05)
 
     agent = DQNAgent(
         train=False,

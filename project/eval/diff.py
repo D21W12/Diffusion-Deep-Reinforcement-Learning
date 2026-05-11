@@ -28,7 +28,7 @@ def evaluate(
     model.load(checkpoint_path)
     print("Loaded checkpoint!")
 
-    x = model.heun_sampler(16).to("cpu")
+    x = model.sample(16).to("cpu")
     x = (x + 1) / 2
 
     fig, axis = plt.subplots(4, 4, figsize=(10, 10), sharex=True, sharey=True)
