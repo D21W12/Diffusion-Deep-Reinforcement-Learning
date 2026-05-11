@@ -13,17 +13,16 @@ from project.train.config import DQNTrainingConfig
 def train_dqn(
         checkpoint_path: str,
         device: str,
+        epochs: int,
         memory_checkpoint_path: str | None = None,
-        *args,
-        **kwargs,
+        interval: int | None = None,
+        tag: str = "",
 ) -> None:
 
     config = DQNTrainingConfig(
         checkpoint_path=checkpoint_path,
         memory_checkpoint_path=memory_checkpoint_path,
         device=device,
-        *args,
-        **kwargs
     )
 
     def checkpoint():
@@ -62,12 +61,14 @@ def train_dqn(
 
     loop = TrainingLoop(
         env=env,
-        agent=agent
+        agent=agent,
+        lr=config.lr,
+        tag=tag,
     )
 
     loop.run(
-        frames=config.epochs,
-        checkpoint=config.checkpoint,
+        frames=epochs,
+        checkpoint=interval,
         checkpoint_callback=checkpoint,
     )
 
@@ -91,18 +92,18 @@ def main():
 
     parser.add_argument('--memory', required=True)
 
+    parser.add_argument('-t', '--tag', required=True)
+
     args = parser.parse_args()
 
-    kwargs = {
-        "model": args.model,
-        "epochs": args.epochs,
-        "device": args.device,
-        "checkpoint_path": args.checkpoint,
-        "memory_checkpoint_path": args.memory
-    }
-    if args.interval: kwargs["checkpoint"] = args.interval
-
-    train_dqn(**kwargs)
+    train_dqn(
+        checkpoint_path=args.checkpoint,
+        device=args.device,
+        memory_checkpoint_path=args.memory,
+        epochs=args.epochs,
+        interval=args.interval,
+        tag=args.tag,
+    )
 
 if __name__ == "__main__":
     main()

@@ -56,6 +56,10 @@ class DQNAgent(Agent):
         self._optimizer = RMSprop(
             params=self._dqn.parameters(),
             lr=lr,
+            alpha=0.95,
+            momentum=0.95,
+            eps=0.01,
+            centered=True,
         )
         self._criterion = SmoothL1Loss()
 
