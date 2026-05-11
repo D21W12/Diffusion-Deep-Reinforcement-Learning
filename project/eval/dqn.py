@@ -19,7 +19,7 @@ def manual_eval(
 
     print(f"Using: {device}")
 
-    env = NoiseWrapper.create_environment(config.environment, render_mode="human", std=0.05)
+    env = BaseWrapper.create_environment(config.environment, render_mode="human")
 
     agent = DQNAgent(
         train=False,
