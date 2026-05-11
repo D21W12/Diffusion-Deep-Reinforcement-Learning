@@ -3,3 +3,4 @@
 *.pyc
 checkpoints/memory
 data/sprites
+wandb
