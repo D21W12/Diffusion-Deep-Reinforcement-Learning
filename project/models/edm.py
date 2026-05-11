@@ -4,6 +4,7 @@ from torch.optim import Adam
 from tqdm import tqdm, trange
 
 from ..nn import UNetEvelynn, EDM2UNet
+from ..util.weights_and_biases import WandB
 
 
 class EDMEvelynn:
@@ -175,7 +176,8 @@ class EDMEvelynn:
     def _run_epoch(
             self,
             dataloader,
-            print_loss: bool = True
+            print_loss: bool = False,
+            wandb: WandB | None = None,
     ):
 
         loss = 0
@@ -186,17 +188,20 @@ class EDMEvelynn:
 
         self._epochs += 1
 
-        if print_loss: print(f"Loss: {loss / len(dataloader.dataset):.5f}")
+        loss /= len(dataloader.dataset)
+        if print_loss: print(f"Loss: {loss:.5f}")
+        if wandb: wandb.log(loss=loss)
 
     def train(
             self,
             epochs: int,
             dataloader,
-            print_loss: bool = True
+            print_loss: bool = True,
+            wandb: WandB | None = None,
     ):
         self._score_network.train()
         for epoch in range(epochs):
-            self._run_epoch(dataloader, print_loss=print_loss)
+            self._run_epoch(dataloader, print_loss=print_loss, wandb=wandb)
 
     def sample(self, batch_size: int = 1) -> torch.Tensor:
 

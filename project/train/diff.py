@@ -9,6 +9,7 @@ from project.models import EDMEvelynn
 from project.train.config import DiffTrainingConfig
 from project.util.data import ReplayMemoryData
 from project.util.transforms import ToFloat
+from project.util.weights_and_biases import WandB
 
 
 def train_diffusion(
@@ -16,6 +17,7 @@ def train_diffusion(
         memory_checkpoint_path: str,
         device: str,
         epochs: int,
+        tag: str = "",
 ) -> None:
 
     config = DiffTrainingConfig()
@@ -53,7 +55,21 @@ def train_diffusion(
         model.load(checkpoint_path)
         print("Loaded checkpoint!")
     print("Initialized model!")
-    model.train(epochs, loader)
+
+    wandb = WandB(
+        project="Diff",
+        lr=config.lr,
+        network=config.network,
+        in_channels=config.in_channels,
+        start_channels=config.start_channels,
+        channel_multipliers=config.channel_multipliers,
+        attention_resolutions=config.attention_resolutions,
+        num_res_blocks=config.num_res_blocks,
+    )
+
+    model.train(epochs, loader, wandb=wandb)
+
+    wandb.finish()
 
     print("Saving checkpoint...")
     model.save(checkpoint_path)
