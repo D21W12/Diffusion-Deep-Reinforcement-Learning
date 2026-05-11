@@ -8,7 +8,7 @@ class DQNTrainingConfig:
     lr: float = 1e-4
     batch_size: int = 32
     discount: int = 0.99
-    replay_size: int = 500_000
+    replay_size: int = 1_000_000
     environment: str = "ALE/Breakout-v5"
     target_update_frequency: int = 10_000
     final_exploration_frame: int = 1_000_000
