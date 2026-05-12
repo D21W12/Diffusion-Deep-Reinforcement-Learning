@@ -62,8 +62,8 @@ def train_diffusion(
         network=config.network,
         in_channels=config.img_channels,
         start_channels=config.model_channels,
-        channel_multipliers=config.channel_mult,
-        attention_resolutions=config.attn_resolutions,
+        channel_multipliers=str(config.channel_mult),
+        attention_resolutions=str(config.attn_resolutions),
         num_res_blocks=config.num_blocks,
         tag=tag,
     )
