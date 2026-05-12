@@ -101,6 +101,8 @@ def main():
 
     parser.add_argument('-m', '--memory', required=True, type=str)
 
+    parser.add_argument('-t', '--tag', default="", type=str)
+
     parser.add_argument('--dir', default=None, type=str)
 
     args = parser.parse_args()
@@ -110,7 +112,8 @@ def main():
         memory_checkpoint_path=args.memory,
         device=args.device,
         epochs=args.epochs,
-        evaluation_dir=args.dir
+        evaluation_dir=args.dir,
+        tag=args.tag,
     )
 
 if __name__ == "__main__":
