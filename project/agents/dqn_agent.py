@@ -3,7 +3,7 @@ import random
 import torch
 
 from torch.nn import SmoothL1Loss
-from torch.optim import AdamW, RMSprop
+from torch.optim import AdamW, RMSprop, Adam
 
 from .base_agent import Agent
 from .experience_replay import ReplayMemory
@@ -53,12 +53,16 @@ class DQNAgent(Agent):
         self._target_dqn = DQNRedKnight(n_actions=n_actions).to(self._device)
         self._target_dqn.load_state_dict(self._dqn.state_dict())
 
-        self._optimizer = RMSprop(
+        # self._optimizer = RMSprop(
+        #     params=self._dqn.parameters(),
+        #     lr=lr,
+        #     alpha=0.95,
+        #     eps=0.01,
+        #     centered=True,
+        # )
+        self._optimizer = Adam(
             params=self._dqn.parameters(),
             lr=lr,
-            alpha=0.95,
-            eps=0.01,
-            centered=True,
         )
         self._criterion = SmoothL1Loss()
 
