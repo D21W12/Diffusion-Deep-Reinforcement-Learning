@@ -46,12 +46,12 @@ def train_diffusion(
 
     print("Initializing model...")
     model = EDMEvelynn(
-        img_resolution=config.resolution,
-        img_channels=config.in_channels,
-        model_channels=config.start_channels,
-        channel_mult=config.channel_multipliers,
-        num_blocks=config.num_res_blocks,
-        attn_resolutions=config.attention_resolutions,
+        img_resolution=config.img_resolution,
+        img_channels=config.img_channels,
+        model_channels=config.model_channels,
+        channel_mult=config.channel_mult,
+        num_blocks=config.num_blocks,
+        attn_resolutions=config.attn_resolutions,
         dropout=config.dropout,
         batch_size=config.batch_size,
         lr=config.lr,
@@ -68,11 +68,11 @@ def train_diffusion(
         project="Diff",
         lr=config.lr,
         network=config.network,
-        in_channels=config.in_channels,
-        start_channels=config.start_channels,
-        channel_multipliers=config.channel_multipliers,
-        attention_resolutions=config.attention_resolutions,
-        num_res_blocks=config.num_res_blocks,
+        in_channels=config.img_channels,
+        start_channels=config.model_channels,
+        channel_multipliers=config.channel_mult,
+        attention_resolutions=config.attn_resolutions,
+        num_res_blocks=config.num_blocks,
         tag=tag,
     )
 
@@ -99,9 +99,9 @@ def main():
 
     parser.add_argument('-e', '--epochs', required=True, type=int)
 
-    parser.add_argument('-m', '--memory', required=True, dtype=str)
+    parser.add_argument('-m', '--memory', required=True, type=str)
 
-    parser.add_argument('--dir', default=None, dtype=str)
+    parser.add_argument('--dir', default=None, type=str)
 
     args = parser.parse_args()
 
@@ -109,7 +109,8 @@ def main():
         checkpoint_path=args.checkpoint,
         memory_checkpoint_path=args.memory,
         device=args.device,
-        epochs=args.epochs
+        epochs=args.epochs,
+        evaluation_dir=args.dir
     )
 
 if __name__ == "__main__":
