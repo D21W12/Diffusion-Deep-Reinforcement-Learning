@@ -1,6 +1,5 @@
 import argparse
 import os
-from time import sleep
 
 from torch.utils.data import DataLoader
 from torchvision.transforms import transforms
@@ -8,7 +7,6 @@ from torchvision.transforms import transforms
 from project.models import EDMEvelynn
 from project.train.config import DiffTrainingConfig
 from project.util.data import ReplayMemoryData
-from project.util.transforms import ToFloat
 from project.util.weights_and_biases import WandB
 
 
