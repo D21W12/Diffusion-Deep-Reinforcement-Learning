@@ -19,12 +19,12 @@ class DQNTrainingConfig:
 class DiffTrainingConfig:
     network: str = 'edm2'
     cap: int = 100_000
-    batch_size: int = 64
-    lr: float = 1e-3
-    img_resolution: int = 88
+    batch_size: int = 32
+    lr: float = 1e-4
+    img_resolution: int = 84
     img_channels: int = 4
     model_channels: int = 128
     num_blocks: int = 3
-    channel_mult: list[int] | tuple[int] = field(default_factory=lambda: [1, 2, 2, 2])
-    attn_resolutions: list[int] | tuple[int] | set[int] = field(default_factory=lambda: [22, 11])
+    channel_mult: list[int] | tuple[int] = field(default_factory=lambda: [2, 2, 2])
+    attn_resolutions: list[int] | tuple[int] | set[int] = field(default_factory=lambda: [21])
     dropout: int = 0.13
