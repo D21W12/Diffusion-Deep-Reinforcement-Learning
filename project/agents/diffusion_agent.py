@@ -54,3 +54,4 @@ class DiffusionAgent(DQNAgent):
 
         self._diffusion_model = EDMEvelynn(**kwargs)
         self._diffusion_model.load(diffusion)
+        return self
