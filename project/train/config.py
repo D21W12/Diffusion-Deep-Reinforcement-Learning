@@ -20,7 +20,7 @@ class DiffTrainingConfig:
     network: str = 'edm2'
     cap: int = 100_000
     batch_size: int = 32
-    lr: float = 1e-4
+    lr: float = 1e-3
     img_resolution: int = 84
     img_channels: int = 4
     model_channels: int = 128
