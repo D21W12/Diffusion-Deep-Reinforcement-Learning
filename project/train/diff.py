@@ -16,6 +16,7 @@ def train_diffusion(
         memory_checkpoint_path: str,
         device: str,
         epochs: int,
+        evaluation_dir: str,
         tag: str = "",
 ) -> None:
 
@@ -23,6 +24,7 @@ def train_diffusion(
 
     transform = transforms.Compose([
         transforms.ToTensor(),
+        transforms.Pad(2),
         transforms.Normalize(0.5, 0.5),
     ])
 
@@ -37,7 +39,7 @@ def train_diffusion(
     data = ReplayMemoryData(
         memory=memory_checkpoint_path,
         transform=transform,
-        cap=100_000
+        cap=config.cap
     )
     loader = DataLoader(data, batch_size=config.batch_size, shuffle=True)
     print(f"Loaded data!")
@@ -71,9 +73,10 @@ def train_diffusion(
         channel_multipliers=config.channel_multipliers,
         attention_resolutions=config.attention_resolutions,
         num_res_blocks=config.num_res_blocks,
+        tag=tag,
     )
 
-    model.train(epochs, loader, wandb=wandb)
+    model.train(epochs, loader, wandb=wandb, evaluation_dir=evaluation_dir)
 
     wandb.finish()
 
@@ -96,7 +99,9 @@ def main():
 
     parser.add_argument('-e', '--epochs', required=True, type=int)
 
-    parser.add_argument('-m', '--memory')
+    parser.add_argument('-m', '--memory', required=True, dtype=str)
+
+    parser.add_argument('--dir', default=None, dtype=str)
 
     args = parser.parse_args()
 

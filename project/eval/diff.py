@@ -4,6 +4,8 @@ from matplotlib import pyplot as plt
 
 from project.eval.config import DiffEvalConfig
 from project.models import EDMEvelynn
+from project.util.evaluate import evaluate_to_image
+
 
 def evaluate(
         checkpoint_path: str,
@@ -28,16 +30,7 @@ def evaluate(
     model.load(checkpoint_path)
     print("Loaded checkpoint!")
 
-    x = model.sample(16).to("cpu")
-    x = (x + 1) / 2
-
-    fig, axis = plt.subplots(4, 4, figsize=(10, 10), sharex=True, sharey=True)
-    for i in range(4):
-        for j in range(4):
-            axis[i, j].imshow(x[i * 4 + j].permute(1, 2, 0).clip(0, 1))
-            axis[i, j].grid(None)
-
-    plt.savefig(output_path)
+    evaluate_to_image(model, output_path)
 
 
 def main():

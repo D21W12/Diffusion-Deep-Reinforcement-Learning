@@ -6,6 +6,7 @@ from torch.optim import Adam
 from tqdm import tqdm, trange
 
 from ..nn import UNetEvelynn, EDM2UNet
+from ..util.evaluate import evaluate_to_image
 from ..util.weights_and_biases import WandB
 
 
@@ -205,10 +206,14 @@ class EDMEvelynn:
             dataloader,
             print_loss: bool = True,
             wandb: WandB | None = None,
+            evaluation_dir: str | None = None
     ):
         self._score_network.train()
         for epoch in range(epochs):
             self._run_epoch(dataloader, print_loss=print_loss, wandb=wandb)
+            if evaluation_dir:
+                path = os.path.join(evaluation_dir, f"{self._epochs}.png")
+                evaluate_to_image(self, path)
 
     def sample(self, batch_size: int = 1) -> torch.Tensor:
 
