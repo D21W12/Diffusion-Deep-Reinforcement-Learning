@@ -27,13 +27,6 @@ def train_diffusion(
         transforms.Normalize(0.5, 0.5),
     ])
 
-    if "cuda" in device:
-        print("Setting CUDA settings...")
-        torch.backends.cudnn.allow_tf32 = False
-        torch.backends.cuda.matmul.allow_tf32 = False
-        torch.backends.cuda.matmul.allow_fp16_reduced_precision_reduction = False
-        print("CUDA setup complete!")
-
     print("Loading data...")
     data = ReplayMemoryData(
         memory=memory_checkpoint_path,
