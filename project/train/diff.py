@@ -1,6 +1,7 @@
 import argparse
 import os
 
+import torch
 from torch.utils.data import DataLoader
 from torchvision.transforms import transforms
 
@@ -25,6 +26,13 @@ def train_diffusion(
         transforms.Normalize(0.5, 0.5),
     ])
 
+    if "cuda" in device:
+        print("Setting CUDA settings...")
+        torch.backends.cudnn.allow_tf32 = False
+        torch.backends.cuda.matmul.allow_tf32 = False
+        torch.backends.cuda.matmul.allow_fp16_reduced_precision_reduction = False
+        print("CUDA setup complete!")
+
     print("Loading data...")
     data = ReplayMemoryData(
         memory=memory_checkpoint_path,
@@ -38,7 +46,7 @@ def train_diffusion(
     model = EDMEvelynn(
         img_resolution=config.resolution,
         img_channels=config.in_channels,
-        start_channels=config.start_channels,
+        model_channels=config.start_channels,
         channel_mult=config.channel_multipliers,
         num_blocks=config.num_res_blocks,
         attn_resolutions=config.attention_resolutions,

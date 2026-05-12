@@ -15,11 +15,11 @@ class EDMEvelynn:
             self,
             img_resolution: int,
             img_channels: int,
-            start_channels: int,
-            channel_mult: tuple[int] | list[int],
-            num_blocks: int,
-            attn_resolutions: set[int] | tuple[int] | list[int],
-            dropout: float,
+            model_channels: int = 192,
+            channel_mult: tuple[int] | list[int] = [1,2,3,4],
+            num_blocks: int = 3,
+            attn_resolutions: set[int] | tuple[int] | list[int] = [16,8],
+            dropout: float = 0.13,
             batch_size: int | None = None,
             lr: float = 1e-3,
             N: int = 32,
@@ -36,7 +36,7 @@ class EDMEvelynn:
 
         self._img_resolution = img_resolution
         self._img_channels = img_channels
-        self._start_channels = start_channels
+        self._model_channels = model_channels
         self._channel_mult = channel_mult,
         self._attn_resolutions = attn_resolutions
         self._num_blocks = num_blocks
@@ -57,7 +57,7 @@ class EDMEvelynn:
             self._score_network = EDM2UNet(
                 img_resolution=img_resolution,
                 img_channels=img_channels,
-                model_channels=start_channels,
+                model_channels=model_channels,
                 num_blocks=num_blocks,
                 channel_mult=channel_mult,
                 attn_resolutions=attn_resolutions,
@@ -66,7 +66,7 @@ class EDMEvelynn:
             self._score_network = UNetEvelynn(
                 img_resolution=img_resolution,
                 img_channels=img_channels,
-                start_channels=start_channels,
+                start_channels=model_channels,
                 out_channels=img_channels,
                 num_blocks=num_blocks,
                 channel_mult=channel_mult,
@@ -151,8 +151,9 @@ class EDMEvelynn:
             c_out = self._c_out(sigmas)[:, None, None, None]
             c_in = self._c_in(sigmas)[:, None, None, None]
             c_noise = self._c_noise(sigmas)
+            x_in = (c_in * x).to(torch.float16)
 
-        return c_skip * x + c_out * self._F(c_in * x, c_noise)
+        return c_skip * x + c_out * self._F(x_in, c_noise).to(torch.float32)
 
     @staticmethod
     def _loss(D_yn, y, weights) -> torch.Tensor:
@@ -245,7 +246,7 @@ class EDMEvelynn:
         return {
             "img_resolution": self._img_resolution,
             "img_channels": self._img_channels,
-            "start_channels": self._start_channels,
+            "model_channels": self._model_channels,
             "channel_mult": self._channel_mult,
             "attn_resolutions": self._attn_resolutions,
             "num_blocks": self._num_blocks

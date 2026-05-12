@@ -7,6 +7,12 @@ class ToFloat:
         return x / 255
 
 
+class FP16Precision:
+
+    def __call__(self, x: torch.Tensor) -> torch.Tensor:
+        return x.to(torch.float16)
+
+
 class PermuteChannels:
     """
     Permute channel dimensions from [H, W, C] to [C, H, W].

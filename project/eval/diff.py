@@ -16,7 +16,7 @@ def evaluate(
     model = EDMEvelynn(
         img_resolution=config.resolution,
         img_channels=config.in_channels,
-        start_channels=config.start_channels,
+        model_channels=config.start_channels,
         channel_mult=config.channel_multipliers,
         num_blocks=config.num_res_blocks,
         attn_resolutions=config.attention_resolutions,
