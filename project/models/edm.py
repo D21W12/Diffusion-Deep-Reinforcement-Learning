@@ -153,7 +153,7 @@ class EDMEvelynn:
             c_in = self._c_in(sigmas)[:, None, None, None]
             c_noise = self._c_noise(sigmas)
 
-        return c_skip * x + c_out * self._F((c_in * x).to(torch.float16), c_noise).to(torch.float32)
+        return c_skip * x + c_out * self._F(c_in * x, c_noise)
 
     @staticmethod
     def _loss(D_yn, y, weights) -> torch.Tensor:
