@@ -49,7 +49,7 @@ class DiffusionAgent(DQNAgent):
     ) -> None:
         super().load(dqn)
 
-        checkpoint = torch.load(diffusion)
+        checkpoint = torch.load(diffusion, map_location=self._device)
         kwargs = checkpoint["config"]
 
         self._diffusion_model = EDMEvelynn(**kwargs)

@@ -1,6 +1,7 @@
 .idea
 .venv
 *.pyc
-checkpoints/memory
+checkpoints
 data/sprites
 wandb
+**/.DS_store

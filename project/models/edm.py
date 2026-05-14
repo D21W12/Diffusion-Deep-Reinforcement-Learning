@@ -12,6 +12,14 @@ from ..util.weights_and_biases import WandB
 
 class EDMEvelynn:
 
+    @classmethod
+    def from_checkpoint(cls, f, device: str):
+        checkpoint = torch.load(f, map_location=device)
+        kwargs = checkpoint["config"]
+
+        model = cls(**kwargs)
+        return model.load(f)
+
     def __init__(
             self,
             img_resolution: int,
