@@ -1,6 +1,7 @@
 import os
 
 import torch
+import matplotlib.pyplot as plt
 
 from torch.optim import Adam
 from tqdm import tqdm, trange
@@ -16,6 +17,10 @@ class EDMEvelynn:
     def from_checkpoint(cls, f, device: str):
         checkpoint = torch.load(f, map_location=device)
         kwargs = checkpoint["config"]
+
+        # Fix saving error I made in my code
+        if isinstance(kwargs['channel_mult'][0], list):
+            kwargs['channel_mult'] = kwargs['channel_mult'][0]
 
         model = cls(**kwargs)
         return model.load(f)
@@ -46,7 +51,7 @@ class EDMEvelynn:
         self._img_resolution = img_resolution
         self._img_channels = img_channels
         self._model_channels = model_channels
-        self._channel_mult = channel_mult,
+        self._channel_mult = channel_mult
         self._attn_resolutions = attn_resolutions
         self._num_blocks = num_blocks
 
@@ -272,10 +277,13 @@ class EDMEvelynn:
             'config': self.config_dict()
         }, f)
 
-    def load(self, f) -> None:
+    def load(self, f) -> 'EDMEvelynn':
 
         data = torch.load(f, map_location=self._device)
 
         self._score_network.load_state_dict(data["score_network_state_dict"])
         self._optimizer.load_state_dict(data["optimizer_state_dict"])
         self._epochs = data["epochs"]
+
+        return self
+
