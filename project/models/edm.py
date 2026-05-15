@@ -44,7 +44,7 @@ class EDMEvelynn:
             P_mean: float = -1.2,
             P_std: float = 1.2,
             network: str = "edm2",
-            mixed_precision: bool = False,
+            mixed_precision: bool = True,
     ) -> None:
 
         self._device = "cpu"
