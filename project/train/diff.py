@@ -48,7 +48,8 @@ def train_diffusion(
         dropout=config.dropout,
         batch_size=config.batch_size,
         lr=config.lr,
-        network=config.network
+        network=config.network,
+        mixed_precision=config.mixed_precision
     ).to(device)
 
     if os.path.exists(checkpoint_path):

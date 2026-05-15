@@ -43,7 +43,8 @@ class EDMEvelynn:
             rho: int = 7,
             P_mean: float = -1.2,
             P_std: float = 1.2,
-            network: str = "edm2"
+            network: str = "edm2",
+            mixed_precision: bool = False,
     ) -> None:
 
         self._device = "cpu"
@@ -54,6 +55,9 @@ class EDMEvelynn:
         self._channel_mult = channel_mult
         self._attn_resolutions = attn_resolutions
         self._num_blocks = num_blocks
+        self._mixed_precision = mixed_precision
+
+        self._dtype = torch.float16 if self._mixed_precision else torch.float32
 
         self._batch_size = batch_size
         self._epochs = 0
@@ -166,7 +170,8 @@ class EDMEvelynn:
             c_in = self._c_in(sigmas)[:, None, None, None]
             c_noise = self._c_noise(sigmas)
 
-        return c_skip * x + c_out * self._F(c_in * x, c_noise)
+        x_in = (c_in * x).to(self._dtype)
+        return c_skip * x + c_out * self._F(x_in, c_noise).to(torch.float32)
 
     @staticmethod
     def _loss(D_yn, y, weights) -> torch.Tensor:
@@ -266,7 +271,8 @@ class EDMEvelynn:
             "model_channels": self._model_channels,
             "channel_mult": self._channel_mult,
             "attn_resolutions": self._attn_resolutions,
-            "num_blocks": self._num_blocks
+            "num_blocks": self._num_blocks,
+            "mixed_precision": self._mixed_precision
         }
 
     def save(self, f) -> None:
