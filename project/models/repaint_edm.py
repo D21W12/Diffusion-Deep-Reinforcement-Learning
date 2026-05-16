@@ -29,7 +29,7 @@ class EDMCallum(EDMEvelynn):
 
                 for u in range(0, self._U):
 
-                    if i < self._N - 1:
+                    if i < (self._N - 1):
                         x_known = self._forward_step(x, i)
                     else:
                         x_known = x
@@ -56,7 +56,9 @@ class EDMCallum(EDMEvelynn):
             i: int,
     ) -> torch.Tensor:
 
-        t = self._t(i)
+        t = self._t(i + 1)
+        t_prev = self._t(i)
         sigma = torch.full((x.shape[0],), self._sigma(t), device=self._device)
+        sigma_prev = torch.full((x.shape[0],), self._sigma(t_prev), device=self._device)
 
-        return -self._sigma_dot(t) * (self._D(x, sigma) - x) / sigma
+        return x + torch.sqrt(sigma_prev ** 2 - sigma ** 2) * torch.randn_like(x)
