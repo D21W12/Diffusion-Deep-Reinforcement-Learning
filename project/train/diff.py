@@ -1,7 +1,9 @@
 import argparse
 import os
+import random
 
 import torch
+import numpy as np
 from torch.utils.data import DataLoader
 from torchvision.transforms import transforms
 
@@ -21,6 +23,11 @@ def train_diffusion(
 ) -> None:
 
     config = DiffTrainingTrainingConfig()
+
+    # Setting the seed
+    random.seed(config.seed)
+    np.random.seed(config.seed)
+    torch.manual_seed(config.seed)
 
     transform = transforms.Compose([
         transforms.ToTensor(),

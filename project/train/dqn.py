@@ -1,8 +1,11 @@
 import argparse
 import os
+import random
 
 import ale_py
 import gymnasium as gym
+import numpy as np
+import torch
 
 from project.agents import DQNAgent
 from project.environments import BaseWrapper
@@ -24,6 +27,11 @@ def train_dqn(
         memory_checkpoint_path=memory_checkpoint_path,
         device=device,
     )
+
+    # Setting the seed
+    random.seed(config.seed)
+    np.random.seed(config.seed)
+    torch.manual_seed(config.seed)
 
     def checkpoint():
         print("Saving checkpoint...")
