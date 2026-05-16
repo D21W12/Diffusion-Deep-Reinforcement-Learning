@@ -246,18 +246,28 @@ class EDMEvelynn:
 
             for i in trange(0, self._N):
 
-                # Take Euler step from t_i to t_(i + 1)
-                d_i = self._dx_dt(x_next, self._t(i))
-                x_prime = x_next + (self._t(i + 1) - self._t(i)) * d_i
-
-                # Apply second order correction unless sigma goes to zero
-                if self._sigma(self._t(i + 1)) != 0:
-                    d_i_prime = self._dx_dt(x_prime, self._t(i + 1))
-                    x_next =  x_next + (self._t(i + 1) - self._t(i)) * (0.5 * d_i + 0.5 * d_i_prime)
-                else:
-                    x_next = x_prime
+                x_next = self._heun_step(i, x_next)
 
             return x_next
+
+    def _heun_step(
+            self,
+            i: int,
+            x_next: torch.Tensor
+    ) -> torch.Tensor:
+
+        # Take Euler step from t_i to t_(i + 1)
+        d_i = self._dx_dt(x_next, self._t(i))
+        x_prime = x_next + (self._t(i + 1) - self._t(i)) * d_i
+
+        # Apply second order correction unless sigma goes to zero
+        if self._sigma(self._t(i + 1)) != 0:
+            d_i_prime = self._dx_dt(x_prime, self._t(i + 1))
+            x_next = x_next + (self._t(i + 1) - self._t(i)) * (0.5 * d_i + 0.5 * d_i_prime)
+        else:
+            x_next = x_prime
+
+        return x_next
 
     def to(self, device: str) -> 'EDM':
         self._score_network.to(device)
