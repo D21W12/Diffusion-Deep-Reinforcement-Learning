@@ -7,7 +7,7 @@ import gymnasium as gym
 from project.agents import DQNAgent
 from project.environments import BaseWrapper
 from project.environments.loops import TrainingLoop
-from project.train.config import DQNTrainingConfig
+from project.train.config import DQNTrainingTrainingConfig
 
 
 def train_dqn(
@@ -19,7 +19,7 @@ def train_dqn(
         tag: str = "",
 ) -> None:
 
-    config = DQNTrainingConfig(
+    config = DQNTrainingTrainingConfig(
         checkpoint_path=checkpoint_path,
         memory_checkpoint_path=memory_checkpoint_path,
         device=device,

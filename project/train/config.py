@@ -1,7 +1,12 @@
 from dataclasses import dataclass, field
 
+
+class TrainingConfig:
+    seed: int = 2112
+
+
 @dataclass
-class DQNTrainingConfig:
+class DQNTrainingTrainingConfig(TrainingConfig):
     device: str
     checkpoint_path: str
     memory_checkpoint_path: str
@@ -16,7 +21,7 @@ class DQNTrainingConfig:
 
 
 @dataclass
-class DDQNTrainingConfig:
+class DDQNTrainingTrainingConfig(TrainingConfig):
     device: str
     checkpoint_path: str
     memory_checkpoint_path: str
@@ -31,7 +36,7 @@ class DDQNTrainingConfig:
 
 
 @dataclass
-class DiffTrainingConfig:
+class DiffTrainingTrainingConfig(TrainingConfig):
     network: str = 'edm2'
     cap: int = 100_000
     batch_size: int = 32

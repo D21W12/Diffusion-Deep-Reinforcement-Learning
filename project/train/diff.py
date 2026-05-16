@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader
 from torchvision.transforms import transforms
 
 from project.models import EDMEvelynn
-from project.train.config import DiffTrainingConfig
+from project.train.config import DiffTrainingTrainingConfig
 from project.util.data import ReplayMemoryData
 from project.util.weights_and_biases import WandB
 
@@ -20,7 +20,7 @@ def train_diffusion(
         tag: str = "",
 ) -> None:
 
-    config = DiffTrainingConfig()
+    config = DiffTrainingTrainingConfig()
 
     transform = transforms.Compose([
         transforms.ToTensor(),

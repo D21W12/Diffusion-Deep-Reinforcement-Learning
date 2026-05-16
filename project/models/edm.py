@@ -14,15 +14,15 @@ from ..util.weights_and_biases import WandB
 class EDMEvelynn:
 
     @classmethod
-    def from_checkpoint(cls, f, device: str):
+    def from_checkpoint(cls, f, device: str, *args, **kwargs):
         checkpoint = torch.load(f, map_location=device)
-        kwargs = checkpoint["config"]
+        kwargs.update(checkpoint["config"])
 
         # Fix saving error I made in my code
         if isinstance(kwargs['channel_mult'][0], list):
             kwargs['channel_mult'] = kwargs['channel_mult'][0]
 
-        model = cls(**kwargs)
+        model = cls(*args, **kwargs)
         return model.load(f)
 
     def __init__(
@@ -44,7 +44,7 @@ class EDMEvelynn:
             P_mean: float = -1.2,
             P_std: float = 1.2,
             network: str = "edm2",
-            mixed_precision: bool = True,
+            mixed_precision: bool = False,
     ) -> None:
 
         self._device = "cpu"
@@ -239,10 +239,8 @@ class EDMEvelynn:
         with torch.no_grad():
 
             x_i_shape = (batch_size, self._img_channels, self._img_resolution, self._img_resolution)
-            x_i = torch.randn(x_i_shape, device=self._device)
-            x_i = x_i * self._sigma(self._t(0)) * self._s(self._t(0))
-
-            x_next = x_i
+            x_next = torch.randn(x_i_shape, device=self._device)
+            x_next *= self._sigma(self._t(0)) * self._s(self._t(0))
 
             for i in trange(0, self._N):
 

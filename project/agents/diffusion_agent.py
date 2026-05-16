@@ -39,7 +39,7 @@ class DiffusionAgent(DQNAgent):
 
     def select_action(self, o) -> int:
 
-        s = self._diffusion_model.reconstruct(o)
+        s = self._diffusion_model.inpaint(o)
         return super().select_action(s)
 
     def load(

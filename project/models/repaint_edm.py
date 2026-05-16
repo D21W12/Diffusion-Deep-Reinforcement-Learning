@@ -12,7 +12,7 @@ class EDMCallum(EDMEvelynn):
 
         self._U = U
 
-    def reconstruct(
+    def inpaint(
             self,
             x: torch.Tensor,
             mask: torch.Tensor
@@ -29,7 +29,7 @@ class EDMCallum(EDMEvelynn):
 
                 for u in range(0, self._U):
 
-                    if i < self._N:
+                    if i < self._N - 1:
                         x_known = self._forward_step(x, i)
                     else:
                         x_known = x
@@ -38,17 +38,17 @@ class EDMCallum(EDMEvelynn):
 
                     x_next = mask * x_known + (1 - mask) * x_unknown
 
-                    if u < self._U and i < self._N:
+                    if u < (self._U - 1) and i < (self._N - 1):
                         x_next = self._diffusion_step(x_next, i)
 
         return x_next
 
-    def _forward(
+    def _forward_step(
             self,
             x_0: torch.Tensor,
             i: int,
     ) -> torch.Tensor:
-        return x_0 + self._sigma(self._t(i)) * torch.randn_like(x)
+        return x_0 + self._sigma(self._t(i)) * torch.randn_like(x_0)
 
     def _diffusion_step(
             self,
@@ -57,6 +57,6 @@ class EDMCallum(EDMEvelynn):
     ) -> torch.Tensor:
 
         t = self._t(i)
-        sigma = self._sigma(t)
+        sigma = torch.full((x.shape[0],), self._sigma(t), device=self._device)
 
         return -self._sigma_dot(t) * (self._D(x, sigma) - x) / sigma
