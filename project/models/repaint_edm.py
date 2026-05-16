@@ -1,9 +1,62 @@
 import torch
+from tqdm import trange
 
 from project.models import EDMEvelynn
 
 
 class EDMCallum(EDMEvelynn):
+    """Implementation of RePaint with EDM."""
 
-    def reconstruct(self, X: torch.Tensor) -> torch.Tensor:
-        pass
+    def __init__(self, U: int, img_resolution: int, img_channels: int, *args, **kwargs):
+        super().__init__(img_resolution, img_channels, *args, **kwargs)
+
+        self._U = U
+
+    def reconstruct(
+            self,
+            x: torch.Tensor,
+            mask: torch.Tensor
+    ) -> torch.Tensor:
+
+        self._score_network.eval()
+
+        with torch.no_grad():
+
+            x_next = torch.randn_like(x, device=self._device)
+            x_next *= self._sigma(self._t(0)) * self._s(self._t(0))
+
+            for i in trange(0, self._N):
+
+                for u in range(0, self._U):
+
+                    if i < self._N:
+                        x_known = self._forward_step(x, i)
+                    else:
+                        x_known = x
+
+                    x_unknown = self._heun_step(x_next, i)
+
+                    x_next = mask * x_known + (1 - mask) * x_unknown
+
+                    if u < self._U and i < self._N:
+                        x_next = self._diffusion_step(x_next, i)
+
+        return x_next
+
+    def _forward(
+            self,
+            x_0: torch.Tensor,
+            i: int,
+    ) -> torch.Tensor:
+        return x_0 + self._sigma(self._t(i)) * torch.randn_like(x)
+
+    def _diffusion_step(
+            self,
+            x: torch.Tensor,
+            i: int,
+    ) -> torch.Tensor:
+
+        t = self._t(i)
+        sigma = self._sigma(t)
+
+        return -self._sigma_dot(t) * (self._D(x, sigma) - x) / sigma

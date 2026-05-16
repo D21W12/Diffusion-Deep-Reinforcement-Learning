@@ -246,14 +246,14 @@ class EDMEvelynn:
 
             for i in trange(0, self._N):
 
-                x_next = self._heun_step(i, x_next)
+                x_next = self._heun_step(x_next, i)
 
             return x_next
 
     def _heun_step(
             self,
+            x_next: torch.Tensor,
             i: int,
-            x_next: torch.Tensor
     ) -> torch.Tensor:
 
         # Take Euler step from t_i to t_(i + 1)
