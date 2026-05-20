@@ -15,4 +15,4 @@ class DiffEvalConfig:
 
 @dataclass
 class DQNEvalConfig:
-    environment: str = "ALE/Breakout-v5"
+    environment: str = "ALE/SpaceInvaders-v5"

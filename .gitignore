@@ -2,6 +2,6 @@
 .venv
 *.pyc
 checkpoints
-data
+data/sprites
 wandb
 **/.DS_store
