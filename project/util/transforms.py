@@ -32,3 +32,9 @@ class CastTo:
 
     def __call__(self, x: torch.Tensor) -> torch.Tensor:
         return x.to(self._dtype)
+
+
+class Difference:
+    def __call__(self, x: torch.Tensor) -> torch.Tensor:
+        diff = (x - x[1:]).abs()
+        return torch.con([x, diff])
