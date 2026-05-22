@@ -38,12 +38,12 @@ class DDQNTrainingTrainingConfig(TrainingConfig):
 @dataclass
 class DiffTrainingTrainingConfig(TrainingConfig):
     network: str = 'edm2'
-    cap: int = 100_000
+    cap: int = 250_000
     batch_size: int = 32
     lr: float = 1e-3
     img_resolution: int = 88
-    img_channels: int = 4
-    model_channels: int = 128
+    img_channels: int = 7
+    model_channels: int = 64
     num_blocks: int = 3
     channel_mult: list[int] | tuple[int] = field(default_factory=lambda: [2, 2, 2])
     attn_resolutions: list[int] | tuple[int] | set[int] = field(default_factory=lambda: [22])
