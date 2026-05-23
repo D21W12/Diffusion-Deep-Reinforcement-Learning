@@ -1,4 +1,5 @@
 import gymnasium as gym
+import torch
 from torchvision.transforms.v2 import GaussianNoise
 
 
@@ -10,7 +11,10 @@ class NoiseWrapper(gym.Wrapper):
             sigma: float,
     ) -> None:
         super().__init__(env)
-        self._transform = GaussianNoise(sigma=sigma)
+        self._sigma = sigma
+
+    def _transform(self, s: torch.Tensor) -> torch.Tensor:
+        return s + self._sigma * torch.randn_like(s)
 
     def step(self, a: int):
         s, r, e, t, i = super().step(a)
