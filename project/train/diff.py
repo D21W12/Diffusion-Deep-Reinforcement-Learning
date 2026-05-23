@@ -32,9 +32,11 @@ def train_diffusion(
 
     transform = transforms.Compose([
         transforms.ToTensor(),
-        Difference(),
         transforms.Normalize(0.5, 0.5),
-	transforms.Pad(2),
+	    transforms.Pad(2),
+    ])
+    on_device_transform = transforms.Compose([
+        Difference(),
     ])
 
     print("Loading data...")
@@ -58,7 +60,8 @@ def train_diffusion(
         batch_size=config.batch_size,
         lr=config.lr,
         network=config.network,
-        mixed_precision=config.mixed_precision
+        mixed_precision=config.mixed_precision,
+        on_device_transform=on_device_transform,
     ).to(device)
 
     if os.path.exists(checkpoint_path):

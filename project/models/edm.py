@@ -45,9 +45,12 @@ class EDMEvelynn:
             P_std: float = 1.2,
             network: str = "edm2",
             mixed_precision: bool = False,
+            on_device_transform = None,
     ) -> None:
 
         self._device = "cpu"
+
+        self._on_device_transform = on_device_transform
 
         self._img_resolution = img_resolution
         self._img_channels = img_channels
@@ -184,6 +187,9 @@ class EDMEvelynn:
 
         sigma = self._sample_sigma(n=y.shape[0])
         weights = self._lambda(sigma)
+
+        if self._on_device_transform:
+            y = self._on_device_transform(y)
 
         n = torch.randn_like(y) * sigma[:, None, None, None]
         yn = y + n

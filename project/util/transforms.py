@@ -37,4 +37,4 @@ class CastTo:
 class Difference:
     def __call__(self, x: torch.Tensor) -> torch.Tensor:
         diff = (x[1:] - x[:-1]).abs()
-        return torch.con([x, diff])
+        return torch.concat([x, diff])
