@@ -185,11 +185,11 @@ class EDMEvelynn:
         if self._batch_size is None:
             self._batch_size = y.shape[0]
 
-        sigma = self._sample_sigma(n=y.shape[0])
-        weights = self._lambda(sigma)
-
         if self._on_device_transform:
             y = self._on_device_transform(y)
+
+        sigma = self._sample_sigma(n=y.shape[0])
+        weights = self._lambda(sigma)
 
         n = torch.randn_like(y) * sigma[:, None, None, None]
         yn = y + n
