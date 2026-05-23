@@ -38,3 +38,15 @@ class Difference:
     def __call__(self, x: torch.Tensor) -> torch.Tensor:
         diff = (x[1:] - x[:-1]).abs()
         return torch.concat([x, diff])
+
+class BatchDifference:
+    def __call__(self, x: torch.Tensor) -> torch.Tensor:
+        diff = (x[:, 1:] - x[:,:-1]).abs()
+        return torch.concat([x, diff], dim=1)
+
+if __name__ == "__main__":
+    transform = BatchDifference()
+    x = torch.randn((32, 4, 88, 88))
+    print(x.shape)
+    x = transform(x)
+    print(x.shape)
