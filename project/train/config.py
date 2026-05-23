@@ -29,7 +29,7 @@ class DDQNTrainingTrainingConfig(TrainingConfig):
     batch_size: int = 32
     discount: int = 0.99
     replay_size: int = 1_000_000
-    environment: str = "ALE/SpaceInvaders-v5"
+    environment: str = "ALE/Seaquest-v5"
     target_update_frequency: int = 10_000
     final_exploration_frame: int = 1_000_000
     replay_start_size: int = 50_000
@@ -38,7 +38,7 @@ class DDQNTrainingTrainingConfig(TrainingConfig):
 @dataclass
 class DiffTrainingTrainingConfig(TrainingConfig):
     network: str = 'edm2'
-    cap: int = 250_000
+    cap: int = 500_000
     batch_size: int = 32
     lr: float = 1e-3
     img_resolution: int = 88
