@@ -36,17 +36,20 @@ class CastTo:
 
 class Difference:
     def __call__(self, x: torch.Tensor) -> torch.Tensor:
-        diff = (x[1:] - x[:-1]).abs()
-        return torch.concat([x, diff])
+        if len(x.shape) == 3:  # Transform single image
+            diff = (x[1:] - x[:-1])
+            dim = 0
+        elif len(x.shape) == 4:  # Transform batch
+            diff = (x[:, 1:] - x[:, :-1])
+            dim = 1
+        else:
+            raise ValueError("Expects shape (C, H, W)")
+        return torch.concat([x, diff.abs()], dim=dim)
 
-class BatchDifference:
-    def __call__(self, x: torch.Tensor) -> torch.Tensor:
-        diff = (x[:, 1:] - x[:,:-1]).abs()
-        return torch.concat([x, diff], dim=1)
 
 if __name__ == "__main__":
-    transform = BatchDifference()
-    x = torch.randn((32, 4, 88, 88))
+    transform = Difference()
+    x = torch.randn((4, 88, 88))
     print(x.shape)
     x = transform(x)
     print(x.shape)
