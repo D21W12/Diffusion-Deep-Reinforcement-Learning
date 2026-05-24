@@ -32,10 +32,10 @@ def train_diffusion(
 
     transform = transforms.Compose([
         transforms.ToTensor(),
-	    transforms.Pad(2, 0),
     ])
     on_device_transform = transforms.Compose([
         Difference(),
+        transforms.Pad(2),
         transforms.Normalize(0.5, 0.5),
     ])
 
