@@ -10,7 +10,7 @@ import torch
 from project.agents import DDQNAgent
 from project.environments import BaseWrapper
 from project.environments.loops import TrainingLoop
-from project.train.config import DDQNTrainingTrainingConfig
+from project.train.config import DDQNTrainingConfig
 
 
 def train_ddqn(
@@ -22,7 +22,7 @@ def train_ddqn(
         tag: str = "",
 ) -> None:
 
-    config = DDQNTrainingTrainingConfig(
+    config = DDQNTrainingConfig(
         checkpoint_path=checkpoint_path,
         memory_checkpoint_path=memory_checkpoint_path,
         device=device,
