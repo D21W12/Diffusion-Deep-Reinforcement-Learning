@@ -6,3 +6,4 @@ matplotlib
 tqdm
 notebook
 pandas
+scipy

@@ -1,5 +1,5 @@
 from project.agents import DQNAgent, Agent
-from project.agents.diffusion_agent import DiffusionAgent
+from project.agents.naive_agent import NaiveDiffusionAgent
 from project.environments import BaseWrapper, NoiseWrapper
 from project.environments.loops import EvaluationLoop
 from project.util.evaluator import Evaluator
@@ -38,7 +38,7 @@ class Experiment:
             return DQNAgent(**kwargs).load(dqn_checkpoint)
         elif agent.lower() == "diffusion":
             print("Chose: diffusion")
-            agent = DiffusionAgent(**kwargs)
+            agent = NaiveDiffusionAgent(**kwargs)
             diffusion_checkpoint = self.query_checkpoint("Diffusion")
             return agent.load(dqn_checkpoint, diffusion_checkpoint)
         else:

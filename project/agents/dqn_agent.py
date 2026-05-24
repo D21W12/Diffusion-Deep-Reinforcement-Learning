@@ -191,7 +191,7 @@ class DQNAgent(Agent):
     def save_memory(self, f):
         self._memory.save(f)
 
-    def load(self, f) -> 'DQNAgent':
+    def load(self, f, *args, **kwargs) -> 'DQNAgent':
         data = torch.load(f, weights_only=False, map_location=self._device)
 
         self._epsilon = data['epsilon']
@@ -209,8 +209,15 @@ class DQNAgent(Agent):
             raise Exception("Agent must be set to train mode before being able to observe experiences.")
         self._memory.load(f)
 
+    def to(self, device) -> 'DQNAgent':
+        self._check_device(device)
+        self._device = device
+        self._dqn.to(device)
+        self._target_dqn.to(device)
+        return self
+
     @staticmethod
-    def _check_device(self, device: str) -> 'DQNAgent':
+    def _check_device(device: str) -> None:
         OPTIONS = ["cuda", "mps", "cpu"]
 
         # Check if a correct/available device is given.
