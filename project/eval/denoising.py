@@ -43,7 +43,7 @@ def evaluate(memory, output, images, denoiser, sigma_noise) -> None:
         y_noisy = y + sigma_noise * torch.randn_like(y)
         y_hat = denoiser.denoise(y_noisy.unsqueeze(0))
 
-        mses.append(MSE(y, y_hatt))
+        mses.append(MSE(y, y_hat))
         psnrs.append(PSNR(y, y_hat))
 
     data = {
