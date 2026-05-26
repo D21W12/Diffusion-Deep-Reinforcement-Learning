@@ -3,6 +3,7 @@ import argparse
 import pandas as pd
 import torch
 from torchvision import transforms
+from tqdm import trange
 
 from project.models import EDMMauMau, EDMLuomen
 from project.util.data import ReplayMemoryData
@@ -17,6 +18,7 @@ MODELS = {
 def evaluate(memory, output, images, denoiser, sigma_noise) -> None:
 
     # Initializing data
+    print("Loading data...")
     transform = transforms.Compose([
         transforms.ToTensor(),
         transforms.Pad(2),
@@ -28,17 +30,18 @@ def evaluate(memory, output, images, denoiser, sigma_noise) -> None:
         transform,
         cap=images
     )
+    print("Data loaded")
 
     # Initialize lists for metrics
     psnrs = []
     mses = []
 
     # Compute metrics for each image
-    for i in range(images):
+    for i in trange(images, desc="Image"):
 
         y = data[i]
         y_noisy = y + sigma_noise * torch.randn_like(y)
-        y_hat = denoiser.denoise(y_noisy)
+        y_hat = denoiser.denoise(y_noisy.unsqueeze(0))
 
         mses.append(MSE(y, y_hatt))
         psnrs.append(PSNR(y, y_hat))
