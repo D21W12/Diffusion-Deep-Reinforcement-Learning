@@ -62,7 +62,7 @@ def main():
 
     parser.add_argument('-m', '--model', required=True)
     parser.add_argument('-c', '--checkpoint', required=True)
-    parser.add_argument('-m', '--memory', required=True)
+    parser.add_argument('--memory', required=True)
 
     parser.add_argument('-o', '--output', required=True)
 
