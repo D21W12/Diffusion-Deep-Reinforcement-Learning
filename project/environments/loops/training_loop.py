@@ -15,12 +15,13 @@ class TrainingLoop(Loop):
             self,
             env: gym.Env,
             agent: Agent,
+            wandb: bool = True,
             *args,
             **kwargs,
     ) -> None:
         super().__init__(env=env, agent=agent)
 
-        self._wandb = WandB(project="DQN", *args, **kwargs)
+        self._wandb = WandB(project="DQN", *args, **kwargs) if wandb else None
 
     def run(
             self,
@@ -51,11 +52,13 @@ class TrainingLoop(Loop):
 
             if done:
                 s, info = self._env.reset()
-                self._wandb.log(
-                    cumulative_reward=cum_reward,
-                    average_reward=cum_reward / ts,
-                    episode_length=ts,
-                )
+                if self._wandb:
+                    self._wandb.log(
+                        cumulative_reward=cum_reward,
+                        average_reward=cum_reward / ts,
+                        episode_length=ts,
+                    )
                 cum_reward = ts = 0
 
-        self._wandb.finish()
+        if self._wandb:
+            self._wandb.finish()

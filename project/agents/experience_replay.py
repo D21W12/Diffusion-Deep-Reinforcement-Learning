@@ -52,7 +52,6 @@ class ReplayMemory:
             self._s[sample_idx],
             self._a[sample_idx],
             self._r[sample_idx],
-            # self._s_prime[sample_idx],
             self._s[(sample_idx + 1) % self._N],
             self._t[sample_idx]
         )
@@ -66,7 +65,6 @@ class ReplayMemory:
         self._s[self._i] = s
         self._a[self._i] = a
         self._r[self._i] = r
-        # self._s_prime[self._i] = s_prime
         self._s[(self._i + 1) % self._N] = s_prime
         self._t[self._i] = t
 
@@ -103,7 +101,7 @@ class ReplayMemory:
         if not self._memory_is_init:
             raise EmptyBufferError("Can't save uninitialized memory!")
 
-        i, full, N  = self._i, self._full, N = self._N
+        i, full, N  = self._i, self._full, self._N
         s, a, r, t = self._s, self._a, self._r, self._t
 
         if cap:
