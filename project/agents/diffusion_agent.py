@@ -1,5 +1,4 @@
 from project.agents.denoising_agent import DenoisingAgent
-from project.models import EDMMauMau, EDMEvelynn
 
 
 class DiffusionAgent(DenoisingAgent):

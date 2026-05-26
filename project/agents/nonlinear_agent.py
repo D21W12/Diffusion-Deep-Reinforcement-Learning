@@ -1,11 +1,11 @@
 from .denoising_agent import DenoisingAgent
-from ..util.denoisers import NonLinearFilter
+from ..util.denoisers import Filter
 
 
 class NonLinearAgent(DenoisingAgent):
 
     def __init__(
             self,
-            filter_: NonLinearFilter
+            filter_: Filter
     ) -> None:
         self._denoiser = filter_

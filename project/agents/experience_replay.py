@@ -5,6 +5,13 @@ from torch import Tensor
 
 class ReplayMemory:
 
+    @classmethod
+    def from_checkpoint(cls, f):
+        state_dict = torch.load(f)
+        memory = cls(N=(state_dict["N"] - 1))  # Setting N is  trivial but needed for construction
+        memory.load_state_dict(state_dict)
+        return memory
+
     def __init__(self, N: int):
 
         super().__init__()
@@ -91,20 +98,27 @@ class ReplayMemory:
 
         self._memory_is_init = True
 
-    def state_dict(self) -> dict:
+    def state_dict(self, cap: int | None = None) -> dict:
 
         if not self._memory_is_init:
             raise EmptyBufferError("Can't save uninitialized memory!")
 
+        i, full, N  = self._i, self._full, N = self._N
+        s, a, r, t = self._s, self._a, self._r, self._t
+
+        if cap:
+            i, N = i % cap, cap + 1
+            full = full or self._i >= cap
+            s, a, r, t = s[:cap], a[:cap], r[:cap], t[:cap]
+
         return {
-            "N": self._N,
-            "i": self._i,
-            "full": self._full,
-            "s": self._s,
-            "a": self._a,
-            "r": self._r,
-            # "s_prime": self._s_prime,
-            "t": self._t
+            "N": N,
+            "i": i,
+            "full": full,
+            "s": s,
+            "a": a,
+            "r": r,
+            "t": t
         }
 
     def load_state_dict(self, state_dict: dict) -> None:
@@ -115,7 +129,6 @@ class ReplayMemory:
         self._s = state_dict["s"]
         self._a = state_dict["a"]
         self._r = state_dict["r"]
-        # self._s_prime = state_dict["s_prime"]
         self._t = state_dict["t"]
 
         self._init_memory(empty=False)
