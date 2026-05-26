@@ -15,7 +15,14 @@ MODELS = {
     "luomen": EDMLuomen,
 }
 
-def evaluate(memory, output, images, denoiser, sigma_noise) -> None:
+def evaluate(
+    memory: str, 
+    output: str, 
+    images: int, 
+    denoiser, 
+    sigma_noise: float, 
+    device: str = 'cpu'
+    ) -> None:
 
     # Initializing data
     print("Loading data...")
@@ -41,7 +48,7 @@ def evaluate(memory, output, images, denoiser, sigma_noise) -> None:
 
         y = data[i]
         y_noisy = y + sigma_noise * torch.randn_like(y)
-        y_hat = denoiser.denoise(y_noisy.unsqueeze(0))
+        y_hat = denoiser.denoise(y_noisy.unsqueeze(0).to(device)).to("cpu")
 
         mses.append(MSE(y, y_hat))
         psnrs.append(PSNR(y, y_hat))
@@ -72,7 +79,7 @@ def main():
     parser.add_argument('-s', '--sigma', required=True, type=float)
     parser.add_argument('-n', required=True, type=int)
 
-    parser.add_argument('-U', required=False, type=int)
+    parser.add_argument('-N', required=False, type=int)
 
     parser.add_argument('-d', '--device', default='cpu')
 
@@ -84,15 +91,15 @@ def main():
         model = model.from_checkpoint(
             args.checkpoint,
             sigma_noise=args.sigma,
-            U=args.U,
+            N=args.N,
             device=args.device
-        )
+        ).to(args.device)
     elif model_ == "maumau":
         model = model.from_checkpoint(
             args.checkpoint,
             sigma_noise=args.sigma,
             device=args.device
-        )
+        ).to(args.device)
 
     evaluate(
         memory=args.memory,
@@ -100,6 +107,7 @@ def main():
         images=args.n,
         denoiser=model,
         sigma_noise=args.sigma,
+        device=args.device
     )
 
 
