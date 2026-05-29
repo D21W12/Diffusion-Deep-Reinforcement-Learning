@@ -61,4 +61,4 @@ class EDMCallum(EDMEvelynn):
         sigma = torch.full((x.shape[0],), self._sigma(t), device=self._device)
         sigma_prev = torch.full((x.shape[0],), self._sigma(t_prev), device=self._device)
 
-        return x + torch.sqrt(sigma_prev ** 2 - sigma ** 2) * torch.randn_like(x)
+        return x + torch.sqrt(sigma_prev ** 2 - sigma ** 2)[:, None, None, None] * torch.randn_like(x)

@@ -273,7 +273,7 @@ class EDMEvelynn:
 
         return x_next
 
-    def to(self, device: str) -> 'EDM':
+    def to(self, device: str) -> 'EDMEvelynn':
         self._score_network.to(device)
         self._device = device
         return self
