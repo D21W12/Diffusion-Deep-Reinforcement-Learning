@@ -20,6 +20,7 @@ class DQNEvalConfig:
 
 @dataclass
 class ExperimentConfig:
+    seed: int = 2112
     environment: str = "ALE/Breakout-v5"
     episodes: int = 30
     sigma_noise: float = 0.5

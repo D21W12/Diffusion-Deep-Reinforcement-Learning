@@ -1,3 +1,5 @@
+import argparse
+
 from project.agents import DDQNAgent, DenoisingAgent, DiffusionAgent
 from project.environments import BaseWrapper
 from project.environments import NoiseWrapper
@@ -6,6 +8,7 @@ from project.eval.config import ExperimentConfig
 from project.models import EDMMauMau, EDMSerie
 from project.util.filters import MedianFilter
 from project.util.evaluator import ExperimentEvaluator
+from project.util.seed import set_seed
 
 SETUPS = ["baseline", "median", "diffusion_naive", "diffusion_full"]
 
@@ -17,7 +20,10 @@ def experiment(
         diff_checkpoint: str,
         device: str = "cpu"
 ):
+
     config = ExperimentConfig()
+
+    set_seed(config.seed)
 
     env = BaseWrapper.create_environment(config.environment)
     env = NoiseWrapper(env)
@@ -80,6 +86,35 @@ def experiment(
     evaluator.to_csv(output)
 
 
+def main():
 
+    parser = argparse.ArgumentParser(
+        prog='Project experiment',
+        description='This program manages running experiments for DiffRL.',
+        epilog='That are all commands >.<'
+    )
 
+    parser.add_argument('--dqn', required=True)
+    parser.add_argument('--diffusion', required=False, default=None)
+
+    parser.add_argument('-d', '--device', default='cpu')
+
+    parser.add_argument('-s', '--setup', type=str)
+
+    parser.add_argument('-n', '--noise', type=float)
+
+    parser.add_argument('-o', '--output', type=str)
+
+    args = parser.parse_args()
+
+    experiment(
+        setup=args.setup,
+        sigma_noise=args.noise,
+        dqn_checkpoint=args.dqn,
+        diff_checkpoint=args.diff,
+        output=args.output
+    )
     
+
+if __name__ == "__main__":
+    pass    
