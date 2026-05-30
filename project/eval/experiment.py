@@ -1,5 +1,8 @@
 import argparse
 
+import ale_py
+import gymnasium as gym
+
 from project.agents import DDQNAgent, DenoisingAgent, DiffusionAgent
 from project.environments import BaseWrapper
 from project.environments import NoiseWrapper
@@ -24,6 +27,8 @@ def experiment(
     config = ExperimentConfig()
 
     set_seed(config.seed)
+
+    gym.register_envs(ale_py)
 
     env = BaseWrapper.create_environment(config.environment)
     env = NoiseWrapper(env)
