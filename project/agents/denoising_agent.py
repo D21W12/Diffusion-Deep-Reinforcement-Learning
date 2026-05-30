@@ -9,7 +9,9 @@ class DenoisingAgent(DQNAgent):
             self,
             denoiser,
             n_actions: int,
+            train: bool,
             lr: float = 2.5e-4,
+            epsilon: float = 0.05,
             replay_size: int = 1000000,
             discount: float = 0.99,
             update_frequency: int = 4,
@@ -21,8 +23,9 @@ class DenoisingAgent(DQNAgent):
     ) -> None:
         super().__init__(
             n_actions,
-            False,
+            train,
             lr,
+            epsilon,
             replay_size,
             discount,
             update_frequency,
@@ -35,10 +38,10 @@ class DenoisingAgent(DQNAgent):
 
         self._denoiser = denoiser
 
-    def select_action(self, o) -> int:
+    def select_action(self, s) -> int:
 
         if not self._denoiser:
             raise Exception("No denoiser is initialized")
 
-        s = self._denoiser.denoise(o)
+        s = self._denoiser.denoise(s)
         return super().select_action(s)

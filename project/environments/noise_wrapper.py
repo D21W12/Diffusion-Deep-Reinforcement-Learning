@@ -14,10 +14,10 @@ class NoiseWrapper(gym.Wrapper):
         self._sigma = sigma
 
     def _transform(self, s: torch.Tensor) -> torch.Tensor:
-        s = s.to(torch.float)
+        s = (s - 0.5) * 2
         e = self._sigma * torch.randn_like(s)
-        e_int = ((e + 1) / 2) * 255
-        return (s + e_int).to(torch.uint8)
+        s = ((s + e) + 1) / 2
+        return s
 
     def step(self, a: int):
         s, r, e, t, i = super().step(a)

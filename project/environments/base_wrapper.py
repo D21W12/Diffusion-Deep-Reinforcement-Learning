@@ -44,7 +44,7 @@ class BaseWrapper(gym.Wrapper):
         return np.sign(r)
 
     def _transform_observation(self, s: np.ndarray) -> Tensor:
-        return torch.from_numpy(s).to(torch.uint8)
+        return torch.from_numpy(s) / 255
 
     def _wrap_env(
             self,

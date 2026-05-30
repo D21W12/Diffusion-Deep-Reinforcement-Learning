@@ -47,6 +47,19 @@ class Difference:
         return torch.concat([x, diff.abs()], dim=dim)
 
 
+class FrameChannelsOnly:
+    def __init__(self, n: int = 4):
+        self._n = n
+
+    def __call__(self, x: torch.Tensor) -> torch.Tensor:
+        if len(x.shape) == 3:  # Transform single image
+            return x[:self._n]
+        elif len(x.shape) == 4:  # Transform batch
+            return x[:, :self._n]
+        else:
+            raise ValueError("Expects shape (C, H, W)")
+
+
 if __name__ == "__main__":
     transform = Difference()
     x = torch.randn((4, 88, 88))

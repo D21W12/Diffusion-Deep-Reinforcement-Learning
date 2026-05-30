@@ -6,7 +6,7 @@ import gymnasium as gym
 from project.agents import DDQNAgent, DenoisingAgent, DiffusionAgent
 from project.environments import BaseWrapper
 from project.environments import NoiseWrapper
-from project.environments.loops import EvaluationLoop
+from project.environments.loops import EvaluationLoop, TestingLoop
 from project.eval.config import ExperimentConfig
 from project.models import EDMMauMau, EDMSerie
 from project.util.filters import MedianFilter
@@ -30,7 +30,7 @@ def experiment(
 
     gym.register_envs(ale_py)
 
-    env = BaseWrapper.create_environment(config.environment)
+    env = BaseWrapper.create_environment(config.environment, render_mode="human")
     env = NoiseWrapper(env, sigma=sigma_noise)
 
     agent_kwargs = {

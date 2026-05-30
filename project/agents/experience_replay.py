@@ -62,10 +62,10 @@ class ReplayMemory:
             self._init_memory(obs_shape=s.shape)
 
         # Save Experience
-        self._s[self._i] = s
+        self._s[self._i] = self._to_uint8(s)
         self._a[self._i] = a
         self._r[self._i] = r
-        self._s[(self._i + 1) % self._N] = s_prime
+        self._s[(self._i + 1) % self._N] = self._to_uint8(s_prime)
         self._t[self._i] = t
 
         self._increment_i()
@@ -136,6 +136,10 @@ class ReplayMemory:
 
     def load(self, f):
         self.load_state_dict(torch.load(f))
+
+    @staticmethod
+    def _to_uint8(s):
+        return (s * 255).to(torch.uint8)
 
 
 class EmptyBufferError(Exception):

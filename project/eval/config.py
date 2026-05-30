@@ -15,7 +15,7 @@ class DiffEvalConfig:
 
 @dataclass
 class DQNEvalConfig:
-    environment: str = "ALE/SpaceInvaders-v5"
+    environment: str = "ALE/Breakout-v5"
 
 
 @dataclass
@@ -23,7 +23,6 @@ class ExperimentConfig:
     seed: int = 2112
     environment: str = "ALE/Breakout-v5"
     episodes: int = 30
-    sigma_noise: float = 0.5
     N: int = 8
     epsilon: float = 0.05
     kernel_size: int = 3
