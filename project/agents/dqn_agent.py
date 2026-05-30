@@ -18,6 +18,7 @@ class DQNAgent(Agent):
             n_actions: int,
             train: bool,
             lr: float = 1e-4,
+            epsilon: float = 0.05,
             replay_size: int = 1000000,
             discount: float = 0.99,
             update_frequency: int = 4,
@@ -66,7 +67,7 @@ class DQNAgent(Agent):
         )
         self._criterion = SmoothL1Loss()
 
-        self._epsilon = 1
+        self._epsilon = 1 if train else epsilon
         self._steps = 0
 
     def select_action(self, s) -> int:

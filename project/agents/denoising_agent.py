@@ -1,13 +1,13 @@
 import torch
 
 from project.agents import DQNAgent
-from project.models import EDMEvelynn, EDMMauMau
 
 
 class DenoisingAgent(DQNAgent):
 
     def __init__(
             self,
+            denoiser,
             n_actions: int,
             lr: float = 2.5e-4,
             replay_size: int = 1000000,
@@ -33,7 +33,7 @@ class DenoisingAgent(DQNAgent):
             device
         )
 
-        self._denoiser = None
+        self._denoiser = denoiser
 
     def select_action(self, o) -> int:
 

@@ -9,8 +9,7 @@ class DiffusionAgent(DenoisingAgent):
             *args,
             **kwargs
     ):
-        super().__init__(*args, **kwargs)
-        self._denoiser = model
+        super().__init__(model, *args, **kwargs)
 
     def load(self, dqn, diffusion) -> 'DiffusionAgent':
         super().load(dqn)

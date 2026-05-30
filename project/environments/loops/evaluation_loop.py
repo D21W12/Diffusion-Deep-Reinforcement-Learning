@@ -38,9 +38,8 @@ class EvaluationLoop(Loop):
             if done:
 
                 self._evaluator.record(
-                    episode_length=t,
-                    cum_reward=cum_reward,
-                    avg_reward=cum_reward / t
+                    length=t,
+                    reward=cum_reward,
                 )
 
                 cum_reward, t, n = 0, 0, n + 1
