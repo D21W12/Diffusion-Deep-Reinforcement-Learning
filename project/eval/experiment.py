@@ -4,7 +4,7 @@ from project.environments import NoiseWrapper
 from project.environments.loops import EvaluationLoop
 from project.eval.config import ExperimentConfig
 from project.models import EDMMauMau, EDMSerie
-from project.util.denoisers import MedianFilter
+from project.util.filters import MedianFilter
 from project.util.evaluator import ExperimentEvaluator
 
 SETUPS = ["baseline1", "median", "diffusion_naive", "diffusion_full"]

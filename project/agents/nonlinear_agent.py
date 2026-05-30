@@ -1,5 +1,5 @@
 from .denoising_agent import DenoisingAgent
-from ..util.denoisers import Filter
+from ..util.filters import Filter
 
 
 class NonLinearAgent(DenoisingAgent):
