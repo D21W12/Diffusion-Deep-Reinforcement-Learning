@@ -12,8 +12,8 @@ class Evaluator:
             length: int,
             reward: float,
     ) -> None:
-        self._length.append(episode_length)
-        self._reward.append(cum_reward)
+        self._length.append(length)
+        self._reward.append(reward)
 
     def to_df(self) -> pd.DataFrame:
         data = {
