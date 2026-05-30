@@ -26,7 +26,7 @@ class Evaluator:
         self.to_df().to_csv(path)
 
 
-class ExperimentEvaluator(Evaluation):
+class ExperimentEvaluator(Evaluator):
 
     def __init__(
         self,
