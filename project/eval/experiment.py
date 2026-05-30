@@ -30,7 +30,7 @@ def experiment(
 
     gym.register_envs(ale_py)
 
-    env = BaseWrapper.create_environment(config.environment, render_mode="human")
+    env = BaseWrapper.create_environment(config.environment)
     env = NoiseWrapper(env, sigma=sigma_noise)
 
     agent_kwargs = {
