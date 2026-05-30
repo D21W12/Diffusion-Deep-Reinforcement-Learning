@@ -7,7 +7,7 @@ from project.models import EDMMauMau, EDMSerie
 from project.util.filters import MedianFilter
 from project.util.evaluator import ExperimentEvaluator
 
-SETUPS = ["baseline1", "median", "diffusion_naive", "diffusion_full"]
+SETUPS = ["baseline", "median", "diffusion_naive", "diffusion_full"]
 
 def experiment(
         setup: str,
@@ -32,7 +32,7 @@ def experiment(
 
     if setup not in SETUPS:
         raise ValueError(f"The given experimental '{setup}' setup does not exist.")
-    elif setup == "baseline1":
+    elif setup == "baseline":
         agent = DDQNAgent(**agent_kwargs)
     elif setup == "median":
         median_filter = MedianFilter(kernel_size=config.kernel_size)
