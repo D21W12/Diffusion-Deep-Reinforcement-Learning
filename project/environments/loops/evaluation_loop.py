@@ -35,8 +35,6 @@ class EvaluationLoop(Loop):
             cum_reward += r
             t += 1
 
-            print(a)
-
             if done:
 
                 self._evaluator.record(
