@@ -39,7 +39,7 @@ def experiment(
     if setup not in SETUPS:
         raise ValueError(f"The given experimental '{setup}' setup does not exist.")
     elif setup == "baseline":
-        agent = DDQNAgent(**agent_kwargs)
+        agent = DDQNAgent(**agent_kwargs).load(dqn_checkpoint)
     elif setup == "median":
         median_filter = MedianFilter(kernel_size=config.kernel_size)
         agent = DenoisingAgent(
@@ -68,7 +68,8 @@ def experiment(
             **agent_kwargs
         )
 
-    agent = agent.to(device)
+    agent.to(device)
+    agent.load(dqn_checkpoint)
 
     evaluator = ExperimentEvaluator(
         setup=setup,
@@ -111,7 +112,7 @@ def main():
         setup=args.setup,
         sigma_noise=args.noise,
         dqn_checkpoint=args.dqn,
-        diff_checkpoint=args.diff,
+        diff_checkpoint=args.diffusion,
         output=args.output
     )
     

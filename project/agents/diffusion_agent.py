@@ -24,11 +24,6 @@ class DiffusionAgent(DenoisingAgent):
         o = self.TRANSFORM(o)
         return super().select_action(o)
 
-    def load(self, dqn, diffusion) -> 'DiffusionAgent':
-        super().load(dqn)
-        self._denoiser.load(diffusion)
-        return self
-
     def to(
             self,
             device: str,
