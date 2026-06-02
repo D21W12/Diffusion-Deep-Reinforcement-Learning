@@ -14,6 +14,7 @@ class ReplayMemoryData(Dataset):
             transform,
             cap: int | None = None,
             device: str = "cpu",
+            train: bool = True,
             *args,
             **kwargs,
     ) -> None:
@@ -28,7 +29,10 @@ class ReplayMemoryData(Dataset):
             i = state_dict["i"]
             images = images[:i]
         if cap:
-            images = images[-cap:]
+            if train:
+                images = images[-cap:]
+            else:
+                images = images[:cap]
 
         self._images = images.permute(0, 2, 3, 1).numpy()
         self._transform = transform
