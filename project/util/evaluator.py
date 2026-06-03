@@ -31,13 +31,16 @@ class ExperimentEvaluator(Evaluator):
     def __init__(
         self,
         setup: str,
+        environment: str,
         sigma_noise: float,
     ):
         super().__init__()
         self._setup = setup
+        self._environment = environment
         self._sigma_noise = sigma_noise
 
     def to_df(self) -> pd.DataFrame:
         df = super().to_df()
         df["setup"] = self._setup
+        df["environment"] = self._environment
         df["sigma_noise"] = self._sigma_noise
