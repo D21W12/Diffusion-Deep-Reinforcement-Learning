@@ -77,9 +77,11 @@ class DQNAgent(Agent):
             return torch.randint(self._n_actions, (1,)).item()
 
         s = s.to(device=self._device)
-        with torch.no_grad():
-            q_values = self._dqn(s.unsqueeze(0))
+        q_values = self.q_values(s)
         return q_values.argmax().item()
+
+    def q_values(self, s) -> torch.Tensor:
+        return self._dqn(s.unsqueeze(0))
 
     def observe(self, s, a, r, s_prime, t) -> None:
 

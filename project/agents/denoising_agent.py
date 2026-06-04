@@ -38,10 +38,6 @@ class DenoisingAgent(DQNAgent):
 
         self._denoiser = denoiser
 
-    def select_action(self, s) -> int:
-
-        if not self._denoiser:
-            raise Exception("No denoiser is initialized")
-
+    def q_values(self, s):
         s = self._denoiser.denoise(s)
-        return super().select_action(s)
+        return super().q_values(s)

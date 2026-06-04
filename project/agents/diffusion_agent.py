@@ -49,12 +49,11 @@ class DiffusionAgent(DQNAgent):
         )
         self._model = model
 
-    def select_action(self, s) -> int:
-        with torch.no_grad():
-            s = self.TRANSFORM(s)
-            s = self._model.denoise(s.unsqueeze(0))
-            s = self.INV_TRANSFORM(s)  # Apply the inverse of the transforms applied for the diffusion model
-            return super().select_action(s.squeeze())  # Only pass observation 0 with the frame channels
+    def q_values(self, s) -> torch.Tensor:
+        s = self.TRANSFORM(s)
+        s = self._model.denoise(s.unsqueeze(0))
+        s = self.INV_TRANSFORM(s)  # Apply the inverse of the transforms applied for the diffusion model
+        return super().q_values(s.squeeze())
 
     def to(
             self,

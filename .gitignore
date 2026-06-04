@@ -5,3 +5,4 @@ checkpoints
 data/sprites
 wandb
 **/.DS_store
+**/.ipynb_checkpoints
