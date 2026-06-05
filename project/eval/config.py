@@ -28,4 +28,4 @@ class ExperimentConfig:
     N: int = 8
     epsilon: float = 0.05
     kernel_size: int = 3
-    noise_levels: list[float] = field(default_factory=lambda: torch.linspace(0, 0.5, 10))
+    noise_levels: list[float] = field(default_factory=lambda: torch.linspace(0.05, 0.50, 9))
