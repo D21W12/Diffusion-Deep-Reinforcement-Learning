@@ -39,5 +39,5 @@ class DenoisingAgent(DQNAgent):
         self._denoiser = denoiser
 
     def q_values(self, s):
-        s = self._denoiser.denoise(s)
+        s = self._denoiser.denoise(s.to("cpu")).to(self._device)  # filter needs tensor to be on cpu
         return super().q_values(s)
