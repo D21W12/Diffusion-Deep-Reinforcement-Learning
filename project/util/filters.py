@@ -16,6 +16,7 @@ class MedianFilter(Filter):
 
     def denoise(self,  x: torch.Tensor) -> torch.Tensor:
         x = x.clone()
+        x = x.to("cpu")
         y = ndimage.median_filter(x, self._kernel_size, output=x)
         return torch.from_numpy(y)
 
@@ -30,6 +31,7 @@ class GaussianFilter(Filter):
 
     def denoise(self, x: torch.Tensor) -> torch.Tensor:
         x = x.clone()
+        x = x.to("cpu")
         y = ndimage.gaussian_filter(x, self._sigma)
         return torch.from_numpy(y)
 
@@ -38,5 +40,6 @@ class WienerFilter(Filter):
 
     def denoise(self, x) -> torch.Tensor:
         x = x.clone()
+        x = x.to("cpu")
         y = signal.wiener(x)
         return torch.from_numpy(y)
