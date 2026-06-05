@@ -17,7 +17,7 @@ class Evaluator:
 
     def to_df(self) -> pd.DataFrame:
         data = {
-            "length": self._episode_length,
+            "length": self._length,
             "reward": self._reward,
         }
         return pd.DataFrame(data)
@@ -32,15 +32,27 @@ class ExperimentEvaluator(Evaluator):
         self,
         setup: str,
         environment: str,
-        sigma_noise: float,
     ):
         super().__init__()
+
         self._setup = setup
         self._environment = environment
-        self._sigma_noise = sigma_noise
+
+        self._sigma_noise = []
+
+    def record(
+            self,
+            length: int,
+            reward: float,
+            sigma_noise: float,
+    ) -> None:
+        super().record(length, reward)
+        self._sigma_noise.append(sigma_noise)
+
 
     def to_df(self) -> pd.DataFrame:
         df = super().to_df()
+        df["sigma_noise"] = self._sigma_noise
         df["setup"] = self._setup
         df["environment"] = self._environment
-        df["sigma_noise"] = self._sigma_noise
+        return df

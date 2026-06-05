@@ -6,7 +6,7 @@ import gymnasium as gym
 from project.agents import DDQNAgent, DenoisingAgent, DiffusionAgent
 from project.environments import BaseWrapper
 from project.environments import NoiseWrapper
-from project.environments.loops import EvaluationLoop, TestingLoop
+from project.environments.loops import ExperimentLoop, TestingLoop
 from project.eval.config import ExperimentConfig
 from project.models import EDMMauMau, EDMSerie
 from project.util.filters import MedianFilter
@@ -16,15 +16,14 @@ from project.util.seed import set_seed
 SETUPS = ["baseline", "median", "diffusion_naive", "diffusion_full"]
 
 def experiment(
+        config: ExperimentConfig,
         setup: str,
         sigma_noise: float,
-        output: str,
         dqn_checkpoint: str,
-        diff_checkpoint: str,
+        diff_checkpoint: str | None,
+        evaluator: ExperimentEvaluator,
         device: str = "cpu"
 ):
-
-    config = ExperimentConfig()
 
     set_seed(config.seed)
 
@@ -76,18 +75,68 @@ def experiment(
     agent.to(device)
     agent.load(dqn_checkpoint)
 
-    evaluator = ExperimentEvaluator(
-        setup=setup,
+    loop = ExperimentLoop(
+        agent=agent,
+        env=env,
+        evaluator=evaluator,
         sigma_noise=sigma_noise
     )
 
-    loop = EvaluationLoop(
-        agent=agent,
-        env=env,
-        evaluator=evaluator
+    loop.run(config.episodes)
+
+
+def single_experiment(
+        setup: str,
+        sigma_noise: float,
+        output: str,
+        dqn_checkpoint: str,
+        diff_checkpoint: str | None,
+        device: str = "cpu"
+        ):
+    
+    config = ExperimentConfig()
+    evaluator = ExperimentEvaluator(
+            setup=setup,
+            environment=config.environment
+        ) 
+
+    experiment(
+        config=config,
+        setup=setup,
+        sigma_noise=sigma_noise,
+        dqn_checkpoint=dqn_checkpoint,
+        diff_checkpoint=diff_checkpoint,
+        evaluator=evaluator,
+        device=device
     )
 
-    loop.run(config.episodes)
+    evaluator.to_csv(output)
+
+
+def multiple_experiment(
+        setup: str,
+        output: str,
+        dqn_checkpoint: str,
+        diff_checkpoint: str | None,
+        device: str = "cpu"
+        ):
+    
+    config = ExperimentConfig()
+    evaluator = ExperimentEvaluator(
+            setup=setup,
+            environment=config.environment
+        ) 
+    
+    for sigma_noise in config.noise_levels:
+        experiment(
+            config=config,
+            setup=setup,
+            sigma_noise=sigma_noise.item(),
+            dqn_checkpoint=dqn_checkpoint,
+            diff_checkpoint=diff_checkpoint,
+            evaluator=evaluator,
+            device=device
+        )
 
     evaluator.to_csv(output)
 
@@ -107,19 +156,32 @@ def main():
 
     parser.add_argument('-s', '--setup', type=str)
 
-    parser.add_argument('-n', '--noise', type=float)
+    parser.add_argument('-n', '--noise', default=None, type=float)
+    parser.add_argument('-m', '--multiple', default=False, action='store_true')
 
     parser.add_argument('-o', '--output', type=str)
 
     args = parser.parse_args()
 
-    experiment(
-        setup=args.setup,
-        sigma_noise=args.noise,
-        dqn_checkpoint=args.dqn,
-        diff_checkpoint=args.diffusion,
-        output=args.output
-    )
+    if args.multiple:
+        multiple_experiment(
+            setup=args.setup,
+            dqn_checkpoint=args.dqn,
+            diff_checkpoint=args.diffusion,
+            output=args.output,
+            device=args.device,
+        )
+    elif args.noise is not None:
+        single_experiment(
+            setup=args.setup,
+            sigma_noise=args.noise,
+            dqn_checkpoint=args.dqn,
+            diff_checkpoint=args.diffusion,
+            output=args.output,
+            device=args.device,
+        )
+    else:
+        raise ValueError("Please pass a noise level or start mutliple experiments!")
     
 
 if __name__ == "__main__":
