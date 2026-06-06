@@ -10,7 +10,6 @@ from torchvision.transforms import transforms
 from project.models import EDMEvelynn
 from project.train.config import DiffTrainingConfig
 from project.util.data import ReplayMemoryData
-from project.util.transforms import Difference
 from project.util.weights_and_biases import WandB
 
 
@@ -34,7 +33,6 @@ def train_diffusion(
         transforms.ToTensor(),
     ])
     on_device_transform = transforms.Compose([
-        Difference(),
         transforms.Pad(2),
         transforms.Normalize(0.5, 0.5),
     ])
