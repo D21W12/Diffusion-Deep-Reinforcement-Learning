@@ -1,5 +1,7 @@
 import torch
 
+from torchvision import transforms
+
 
 class ToFloat:
 
@@ -58,6 +60,22 @@ class FrameChannelsOnly:
             return x[:, :self._n]
         else:
             raise ValueError("Expects shape (C, H, W)")
+        
+
+class NoisyPadding:
+    def __init__(self, padding: int, fill: int, sigma: float):
+        self._padding = padding
+        self._sigma = sigma
+        self._pad = transforms.Pad(padding, fill)
+
+    def __call__(self, x: torch.Tensor) -> torch.Tensor:
+        x = self._pad(x)
+        e = torch.randn_like(x) * self._sigma
+        x[:, :self._padding] = e[:, :self._padding]
+        x[:, -self._padding:] = e[:, -self._padding:]
+        x[:, :, :self._padding] = e[:, :, :self._padding]
+        x[:, :, -self._padding:] = e[:, :, -self._padding:]
+        return x
 
 
 if __name__ == "__main__":

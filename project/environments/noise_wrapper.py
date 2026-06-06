@@ -1,6 +1,7 @@
 import gymnasium as gym
 import torch
-from torchvision.transforms.v2 import GaussianNoise
+from torchvision import transforms
+from project.util.transforms import Difference
 
 
 class NoiseWrapper(gym.Wrapper):
@@ -13,18 +14,21 @@ class NoiseWrapper(gym.Wrapper):
         super().__init__(env)
         self._sigma = sigma
 
-    def _transform(self, s: torch.Tensor) -> torch.Tensor:
-        s = (s - 0.5) * 2
-        e = self._sigma * torch.randn_like(s)
-        s = ((s + e) + 1) / 2
-        return s
+    def _transform_observation(self, s: torch.Tensor) -> torch.Tensor:
+        e = torch.randn_like(s) * self._sigma
+        return s + e * 0.5  # Scale by 0.5 to account for range [0, 1] instead of [-1, 1]
 
     def step(self, a: int):
         s, r, e, t, i = super().step(a)
         return (
-            self._transform(s),
+            self._transform_observation(s),
             r,
             e,
             t,
             i
         )
+    
+    def reset(self, *args, **kwargs):
+        s, i = super().reset(*args, **kwargs)
+        return self._transform_observation(s), i
+

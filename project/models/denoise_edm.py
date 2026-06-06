@@ -52,7 +52,7 @@ class EDMSerie(EDMDenoise):
 
             x_next = x
 
-            for i in trange(self._N):
+            for i in range(self._N):
 
                 x_next = self._heun_step(x_next, i)
 
