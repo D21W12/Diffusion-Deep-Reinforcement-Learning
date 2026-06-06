@@ -58,6 +58,7 @@ def experiment(
             )
         agent = DiffusionAgent(
             model=model,
+            sigma_noise=sigma_noise
             **agent_kwargs
         )
     elif setup == "diffusion_full":
@@ -69,6 +70,7 @@ def experiment(
             )
         agent = DiffusionAgent(
             model=model,
+            sigma_noise=sigma_noise,
             **agent_kwargs
         )
 

@@ -2,24 +2,15 @@ import torch
 from torchvision import transforms
 
 from project.agents import DQNAgent
-from project.util.transforms import Difference, ToFloat, FrameChannelsOnly
+from project.util.transforms import NoisyPadding
 
 
 class DiffusionAgent(DQNAgent):
-    TRANSFORM = transforms.Compose([
-        transforms.Pad(2),
-        Difference(),
-        transforms.Normalize(0.5, 0.5),
-    ])
-    INV_TRANSFORM = transforms.Compose([
-        FrameChannelsOnly(4),
-        transforms.CenterCrop(84),
-        transforms.Normalize(-1, 2)
-    ])
 
     def __init__(
             self,
             model,
+            sigma_noise: float,
             n_actions: int,
             train: bool,
             lr: float = 2.5e-4,
@@ -48,11 +39,21 @@ class DiffusionAgent(DQNAgent):
             device
         )
         self._model = model
+        self._sigma_noise = sigma_noise
+
+        self.transform = transforms.Compose([
+            NoisyPadding(2, 0, sigma_noise),
+            transforms.Normalize(0.5, 0.5),
+        ])
+        self.inv_transform = transforms.Compose([
+            transforms.CenterCrop(84),
+            transforms.Normalize(-1, 2)
+        ])
 
     def q_values(self, s) -> torch.Tensor:
-        s = self.TRANSFORM(s)
+        s = self.transform(s)
         s = self._model.denoise(s.unsqueeze(0))
-        s = self.INV_TRANSFORM(s)  # Apply the inverse of the transforms applied for the diffusion model
+        s = self.inv_transform(s)  # Apply the inverse of the transforms applied for the diffusion model
         return super().q_values(s.squeeze())
 
     def to(
