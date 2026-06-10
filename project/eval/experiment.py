@@ -6,7 +6,7 @@ import gymnasium as gym
 from project.agents import DDQNAgent, DenoisingAgent, DiffusionAgent
 from project.environments import BaseWrapper
 from project.environments import NoiseWrapper
-from project.environments.loops import ExperimentLoop, TestingLoop
+from project.environments.loops import ExperimentLoop
 from project.eval.config import ExperimentConfig
 from project.models import EDMMauMau, EDMSerie
 from project.util.filters import MedianFilter
@@ -29,7 +29,7 @@ def experiment(
 
     gym.register_envs(ale_py)
 
-    env = BaseWrapper.create_environment(config.environment)
+    env = BaseWrapper.create_environment(config.environment, render_mode='human')
     env = NoiseWrapper(env, sigma=sigma_noise)
 
     agent_kwargs = {
@@ -43,7 +43,7 @@ def experiment(
     if setup not in SETUPS:
         raise ValueError(f"The given experimental '{setup}' setup does not exist.")
     elif setup == "baseline":
-        agent = DDQNAgent(**agent_kwargs).load(dqn_checkpoint)
+        agent = DDQNAgent(**agent_kwargs)
     elif setup == "median":
         median_filter = MedianFilter(kernel_size=config.kernel_size)
         agent = DenoisingAgent(
@@ -58,7 +58,7 @@ def experiment(
             )
         agent = DiffusionAgent(
             model=model,
-            sigma_noise=sigma_noise
+            sigma_noise=sigma_noise,
             **agent_kwargs
         )
     elif setup == "diffusion_full":
