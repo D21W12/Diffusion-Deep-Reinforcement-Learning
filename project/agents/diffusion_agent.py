@@ -54,7 +54,7 @@ class DiffusionAgent(DQNAgent):
         s = self.transform(s)
         s = self._model.denoise(s.unsqueeze(0))
         s = self.inv_transform(s)  # Apply the inverse of the transforms applied for the diffusion model
-        return super().q_values(s.squeeze())
+        return super().q_values(s.squeeze()), s.squeeze()
 
     def to(
             self,
