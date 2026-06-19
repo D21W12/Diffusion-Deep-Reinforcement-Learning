@@ -12,6 +12,9 @@ class EDMCallum(EDMEvelynn):
 
         self._U = U
 
+    def set_U(self, U: int) -> None:
+        self._U = U
+
     def inpaint(
             self,
             x: torch.Tensor,

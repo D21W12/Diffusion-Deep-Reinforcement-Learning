@@ -44,6 +44,10 @@ class EDMSerie(EDMDenoise):
     def __init__(self, sigma_noise: float, img_resolution: int, img_channels: int, *args, **kwargs):
         super().__init__(sigma_noise, img_resolution, img_channels, sigma_max=sigma_noise, *args, **kwargs)
 
+    def set_sigma_noise(self, sigma_noise):
+        self._sigma_noise = sigma_noise
+        self._sigma_max = sigma_noise
+
     def denoise(self, x: torch.Tensor) -> torch.Tensor:
         
         self._score_network.eval()

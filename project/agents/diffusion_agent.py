@@ -50,6 +50,14 @@ class DiffusionAgent(DQNAgent):
             transforms.Normalize(-1, 2)
         ])
 
+    def set_sigma_noise(self, sigma_noise):
+        self._sigma_noise = sigma_noise
+        self.transform = transforms.Compose([
+            NoisyPadding(2, 0, sigma_noise),
+            transforms.Normalize(0.5, 0.5),
+        ])
+        self._model.set_sigma_noise(sigma_noise)
+
     def q_values(self, s) -> torch.Tensor:
         s = self.transform(s)
         s = self._model.denoise(s.unsqueeze(0))

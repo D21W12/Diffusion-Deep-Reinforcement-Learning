@@ -29,7 +29,7 @@ def experiment(
 
     gym.register_envs(ale_py)
 
-    env = BaseWrapper.create_environment(config.environment, render_mode='human')
+    env = BaseWrapper.create_environment(config.environment)
     env = NoiseWrapper(env, sigma=sigma_noise)
 
     agent_kwargs = {
@@ -133,7 +133,7 @@ def multiple_experiment(
         experiment(
             config=config,
             setup=setup,
-            sigma_noise=sigma_noise.item(),
+            sigma_noise=sigma_noise,
             dqn_checkpoint=dqn_checkpoint,
             diff_checkpoint=diff_checkpoint,
             evaluator=evaluator,
