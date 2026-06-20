@@ -37,7 +37,7 @@ class EDMCallum(EDMEvelynn):
                     else:
                         x_known = x
 
-                    x_unknown = self._heun_step(x_next, i)
+                    x_unknown = self._heun_step(x_next, x_known, mask, i)
 
                     x_next = mask * x_known + (1 - mask) * x_unknown
 
@@ -45,13 +45,35 @@ class EDMCallum(EDMEvelynn):
                         x_next = self._diffusion_step(x_next, i)
 
         return x_next
+    
+    def _heun_step(
+            self,
+            x_unknown: torch.Tensor,
+            x_known: torch.Tensor,
+            mask: torch.Tensor,
+            i: int,
+    ) -> torch.Tensor:
+
+        # Take Euler step from t_i to t_(i + 1)
+        d_i = self._dx_dt(x_unknown, self._t(i))
+        x_unknown = x_unknown + (self._t(i + 1) - self._t(i)) * d_i
+        x_prime = mask * x_known + (1 - mask) * x_unknown
+
+        # Apply second order correction unless sigma goes to zero
+        if self._sigma(self._t(i + 1)) != 0:
+            d_i_prime = self._dx_dt(x_prime, self._t(i + 1))
+            x_unknown = x_unknown + (self._t(i + 1) - self._t(i)) * (0.5 * d_i + 0.5 * d_i_prime)
+        else:
+            x_unknown = x_prime
+
+        return x_unknown
 
     def _forward_step(
             self,
-            x_0: torch.Tensor,
+            x: torch.Tensor,
             i: int,
     ) -> torch.Tensor:
-        return x_0 + self._sigma(self._t(i)) * torch.randn_like(x_0)
+        return x + self._sigma(self._t(i)) * torch.randn_like(x)
 
     def _diffusion_step(
             self,
