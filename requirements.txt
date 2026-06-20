@@ -8,3 +8,4 @@ notebook
 pandas
 scipy
 wandb
+duckdb
