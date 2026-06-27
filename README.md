@@ -1,6 +1,6 @@
 # Using Diffusion Score-Matching to Reconstruct Observations in Deep Reinforcement Learning
 
-> The thesis can be found, starting from __01-07-2026__ in the public `latex` submodule referred to in this repository.
+> The thesis can be found, starting from __01-07-2026__, in the public `latex` submodule referred to in this repository.
 
 This repository contains the implementation of my BSc thesis: Using Diffusion Score-Matching to Reconstruct Observations in Deep Reinforcement Learning. The repository is based on the opensource Gymnasium framework for reinforcement learning environments, and implements all the algorithms from scratch using PyTorch. The project contains implementations alongside the proposed RePaint Heun sampler for EDM-based diffusion models.
 
