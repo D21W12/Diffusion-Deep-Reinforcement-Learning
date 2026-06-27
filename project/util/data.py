@@ -46,6 +46,10 @@ class ReplayMemoryData(Dataset):
         if self._transform:
             image = self._transform(image)
         return image
+    
+    def __add__(self, other) -> 'ReplayMemoryData':
+        self._images = np.concat([self._images, other._images])
+        return self
 
     def to(self, device: str) -> 'ReplayMemoryData':
         self._images = self._images.to(device)
