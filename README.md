@@ -24,7 +24,7 @@ Step 3. Install the repositories requirements using the `requirements.txt`
 pip3 install -r "requirements.txt"
 ```
 
-Step 4. Download the checkpoints and datasets from the associated [huggingface dataset](https://huggingface.co/datasets/D21W12/Diffusion-Deep-Reinforcement-Learning)
+[OPTIONAL] Step 4. Download the checkpoints and datasets from the associated [huggingface dataset](https://huggingface.co/datasets/D21W12/Diffusion-Deep-Reinforcement-Learning)
 
 > As of today (27-06-2026), I have not yet had the oppertunity to upload the checkpoints from the cluster yet. I'll try to upload them as soon as possible. However, one can reproduce the results of the thesis without the actual checkpoints using the training and experiment CLI tools presented in the following sections.
 
