@@ -12,7 +12,7 @@ Step 1. Clone the repository using the following command
 git clone git@github.com:D21W12/Improving-Deep-Reinforcement-Learning-using-Diffusion-Score-Matching.git
 ```
 
-Step 2. Install PyTorch for your complute platform from the official (installation)[https://pytorch.org/get-started/locally/] page. The following installs `torch` and `torchvision` for cuda 1.13.2 using pip3.
+Step 2. Install PyTorch for your complute platform from the official [installation](https://pytorch.org/get-started/locally/) page. The following installs `torch` and `torchvision` for cuda 1.13.2 using pip3.
 
 ```
 pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu132
