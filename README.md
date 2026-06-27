@@ -6,7 +6,7 @@ This repository contains the implementation of my BSc thesis: Using Diffusion Sc
 
 ## Installation
 
-Step 1. Clone the repository using the following command
+Step 1. Clone the repository using the following command:
 
 ```
 git clone git@github.com:D21W12/Improving-Deep-Reinforcement-Learning-using-Diffusion-Score-Matching.git
@@ -18,13 +18,13 @@ Step 2. Install PyTorch for your complute platform from the official [installati
 pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu132
 ```
 
-Step 3. Install the repositories requirements using the `requirements.txt`
+Step 3. Install the repositories requirements using the `requirements.txt`:
 
 ```
 pip3 install -r "requirements.txt"
 ```
 
-[OPTIONAL] Step 4. Download the checkpoints and datasets from the associated [huggingface dataset](https://huggingface.co/datasets/D21W12/Diffusion-Deep-Reinforcement-Learning)
+[OPTIONAL] Step 4. Download the checkpoints and datasets from the associated [huggingface dataset](https://huggingface.co/datasets/D21W12/Diffusion-Deep-Reinforcement-Learning).
 
 > As of today (27-06-2026), I have not yet had the oppertunity to upload the checkpoints from the cluster yet. I'll try to upload them as soon as possible. However, one can reproduce the results of the thesis without the actual checkpoints using the training and experiment CLI tools presented in the following sections.
 
