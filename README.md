@@ -11,7 +11,7 @@ This repository contains the implementation of my BSc thesis: Using Diffusion Sc
 Step 1. Clone the repository using the following command:
 
 ```
-git clone git@github.com:D21W12/Improving-Deep-Reinforcement-Learning-using-Diffusion-Score-Matching.git
+git clone git@github.com:D21W12/Diffusion-Deep-Reinforcement-Learning.git
 ```
 
 Step 2. Install PyTorch for your complute platform from the official [installation](https://pytorch.org/get-started/locally/) page. The following installs `torch` and `torchvision` for cuda 1.13.2 using pip3.
