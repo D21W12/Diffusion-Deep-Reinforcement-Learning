@@ -1,6 +1,6 @@
 # Using Diffusion Score-Matching to Reconstruct Observations in Deep Reinforcement Learning
 
-> The thesis can be found, starting from __01-07-2026__, in the public `latex` submodule referred to in this repository.
+> The thesis can be found in thesis.pdf and in the  public `latex` submodule referred to in this repository.
 
 > Some of the classes I created are named after characters from my favorite shows: __The Dragon Prince__, __The Apothecary Diaries__, and __Frieren: Beyond Journey's End__. The characters are in some way related through their traits to the classes they are named after.
 
